@@ -163,13 +163,13 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 // - Function bfs must set predecesor of u to ROOT.
 // - Return value is the number of visited vertices.
 size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t> &D) {
-	// TODO implement
-
 	std::queue<Vertex> q;
 	size_t visitedCount = 0;
+	std::vector<bool> visited;
+	visited.resize(G.vertices());
 
 	q.push(u);
-	// TODO track visited vertices
+	visited[u] = true;
 	P[u] = ROOT;
 	D[u] = 0;
 
@@ -179,8 +179,8 @@ size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t>
 		++visitedCount;
 
 		for (Vertex w : G[v]) {
-			if (false) { // TODO check if vertex was visited
-				// TODO track that w was visited
+			if (!visited[w]) {
+				visited[w] = true;
 				P[w] = v;
 				D[w] = D[v] + 1;
 				q.push(w);
