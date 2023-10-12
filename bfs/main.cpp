@@ -166,6 +166,7 @@ size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t>
 	// TODO implement
 
 	std::queue<Vertex> q;
+	size_t visitedCount = 0;
 
 	q.push(u);
 	// TODO track visited vertices
@@ -175,6 +176,7 @@ size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t>
 	while (!q.empty()) {
 		Vertex v = q.front();
 		q.pop();
+		++visitedCount;
 
 		for (Vertex w : G[v]) {
 			if (false) { // TODO check if vertex was visited
@@ -185,6 +187,8 @@ size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t>
 			}
 		}
 	}
+
+	return visitedCount;
 }
 
 #ifndef __PROGTEST__
