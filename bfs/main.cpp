@@ -164,6 +164,27 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 // - Return value is the number of visited vertices.
 size_t bfs(const Graph &G, Vertex u, std::vector<Vertex> &P, std::vector<size_t> &D) {
 	// TODO implement
+
+	std::queue<Vertex> q;
+
+	q.push(u);
+	// TODO track visited vertices
+	P[u] = ROOT;
+	D[u] = 0;
+
+	while (!q.empty()) {
+		Vertex v = q.front();
+		q.pop();
+
+		for (Vertex w : G[v]) {
+			if (false) { // TODO check if vertex was visited
+				// TODO track that w was visited
+				P[w] = v;
+				D[w] = D[v] + 1;
+				q.push(w);
+			}
+		}
+	}
 }
 
 #ifndef __PROGTEST__
