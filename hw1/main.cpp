@@ -38,7 +38,44 @@ struct Path {
 
 #endif
 
-std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths);
+struct MyPath {
+	Point m_to;
+	unsigned m_length;
+	MyPath(size_t to, unsigned length) : m_to{to}, m_length(length) {}
+};
+
+class Graph {
+private:
+	size_t m_size;
+	std::map<Point, std::vector<MyPath>> m_G;
+	std::map<Point, std::vector<MyPath>> m_GInverse;
+
+public:
+	Graph(size_t size, const std::vector<Path> &paths) : m_size(size) {
+		for (Path p : paths) {
+			if (m_G.count(p.from) == 0) {
+				m_G.insert(p.from, {});
+				m_GInverse.insert(p.from, {});
+			}
+			if (m_G.count(p.to) == 0) {
+				m_G.insert(p.to, {});
+				m_GInverse.insert(p.to, {});
+			}
+
+			m_G.find(p.from)->second.push_back({p.to, p.length});
+			m_GInverse.find(p.to)->second.push_back({p.from, p.length});
+		}
+	}
+
+	const size_t getSize() {
+		return m_size;
+	}
+};
+
+std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths) {
+	// construct graph
+	Graph g(points, all_paths);
+}
 
 #ifndef __PROGTEST__
 
