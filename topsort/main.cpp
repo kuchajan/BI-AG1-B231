@@ -147,7 +147,42 @@ std::vector<Vertex> findCycle(const Graph &G, Vertex u) {
 
 // Returns either true and a topological order or false and a cycle
 std::pair<bool, std::vector<Vertex>> topsort(const Graph &G) {
-	// TODO implement
+	std::queue<Vertex> q;
+	std::vector<size_t> incomingEdgeCount;
+	std::vector<Vertex> sorted;
+	sorted.reserve(G.vertices());
+	incomingEdgeCount.resize(G.vertices());
+
+	for (Vertex v : G) {
+		for (Vertex w : G[v]) {
+			++incomingEdgeCount[w];
+		}
+	}
+
+	for (size_t v = 0; v < G.vertices(); ++v) {
+		if (incomingEdgeCount[v] == 0) {
+			q.push((Vertex)v);
+			sorted.push_back((Vertex)v);
+		}
+	}
+
+	while (!q.empty()) {
+		Vertex z = q.front();
+		q.pop();
+		for (Vertex w : G[z]) {
+			if (--incomingEdgeCount[w] == 0) {
+				q.push(w);
+				sorted.push_back((Vertex)w);
+			}
+		}
+	}
+
+	for (size_t v = 0; v < G.vertices(); ++v) {
+		if (incomingEdgeCount[v] != 0) {
+			return {false, findCycle(G, (Vertex)v)};
+		}
+	}
+	return {true, sorted};
 }
 
 #ifndef __PROGTEST__
