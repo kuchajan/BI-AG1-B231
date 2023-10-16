@@ -70,6 +70,16 @@ public:
 	const size_t getSize() {
 		return m_size;
 	}
+
+	const std::vector<Point> getSinks() {
+		std::vector<Point> sinks;
+		for (auto v : m_GInverse) {
+			if (v.second.size() == 0) {
+				sinks.push_back(v.first);
+			}
+		}
+		return sinks;
+	}
 };
 
 std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths) {
