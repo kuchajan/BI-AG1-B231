@@ -136,6 +136,15 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 
 #endif
 
+/**
+ * @brief: Finds a cycle in an cyclic oriented graph
+ * @param G: The cyclic oriented graph
+ * @param u: Vertex to start from
+ */
+std::vector<Vertex> findCycle(const Graph &G, Vertex u) {
+	// TODO implement
+}
+
 // Returns either true and a topological order or false and a cycle
 std::pair<bool, std::vector<Vertex>> topsort(const Graph &G) {
 	// TODO implement
