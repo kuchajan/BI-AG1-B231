@@ -136,9 +136,9 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 
 #endif
 
-std::pair<bool, std::vector<Vertex>> dfs(const Graph &G, std::vector<bool> &visited, Vertex toFind, Vertex visiting, std::vector<Vertex> pathTaken) {
+bool dfs(const Graph &G, std::vector<bool> &visited, Vertex toFind, Vertex visiting, std::vector<Vertex> &pathTaken) {
 	if (visiting == toFind) {
-		return {true, pathTaken};
+		return true;
 	}
 	pathTaken.push_back(visiting);
 	visited[visiting] = true;
@@ -146,12 +146,12 @@ std::pair<bool, std::vector<Vertex>> dfs(const Graph &G, std::vector<bool> &visi
 		if (visited[toVisit]) {
 			continue;
 		}
-		auto [completed, pathToReturn] = dfs(G, visited, toFind, toVisit, pathTaken);
-		if (completed) {
-			return {true, pathToReturn};
+		if (dfs(G, visited, toFind, toVisit, pathTaken)) {
+			return true;
 		}
 	}
-	return {false, {}};
+	pathTaken.pop_back();
+	return false;
 }
 
 /**
@@ -169,9 +169,8 @@ std::vector<Vertex> findCycle(const Graph &G, std::vector<Vertex> startVertices)
 		std::vector<Vertex> pathTaken;
 		pathTaken.push_back(startVertex);
 		for (Vertex toVisit : G[startVertex]) {
-			auto [completed, pathToReturn] = dfs(G, visited, startVertex, toVisit, pathTaken);
-			if (completed) {
-				return pathToReturn;
+			if (dfs(G, visited, startVertex, toVisit, pathTaken)) {
+				return pathTaken;
 			}
 		}
 	}
