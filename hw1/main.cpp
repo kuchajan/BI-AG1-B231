@@ -81,7 +81,7 @@ public:
 		return sinks;
 	}
 
-	void bfs() {
+	std::vector<bfsInfo> bfs() {
 		std::queue<Point> q;
 		std::vector<bfsInfo> info;
 		info.resize(getSize());
@@ -106,13 +106,33 @@ public:
 				q.push(p.m_to);
 			}
 		}
+
+		return info;
 	}
 };
+
+std::pair<unsigned, Point> findMax(size_t points, const std::vector<bfsInfo> &info) {
+	// find the max, filter the result
+	Point begin;
+	unsigned length = 0;
+	bool first = true;
+	for (size_t v = 0; v < points; ++v) {
+		if (length < info[v].length || first) {
+			first = false;
+			length = info[v].length;
+			begin = (Point)v;
+		}
+	}
+	return {length, begin};
+}
 
 std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths) {
 	// construct graph
 	Graph g(points, all_paths);
-	g.bfs();
+	std::vector<bfsInfo> info = g.bfs();
+
+	auto [length, max] = findMax(points, info);
+
 	return {};
 }
 
