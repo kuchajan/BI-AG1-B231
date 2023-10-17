@@ -115,12 +115,12 @@ public:
 
 Point findMax(size_t points, const std::vector<bfsInfo> &info) {
 	// find the max, filter the result
-	Point begin;
-	unsigned length = 0;
-	bool first = true;
-	for (size_t v = 0; v < points; ++v) {
-		if (length < info[v].length_total || first) {
-			first = false;
+	// first iteration
+	Point begin = (Point)0;
+	unsigned length = info[0].length_total;
+	// rest
+	for (size_t v = 1; v < points; ++v) {
+		if (length < info[v].length_total) {
 			length = info[v].length_total;
 			begin = (Point)v;
 		}
