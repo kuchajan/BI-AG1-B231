@@ -44,47 +44,76 @@ struct MyPath {
 	MyPath(size_t to, unsigned length) : m_to{to}, m_length(length) {}
 };
 
+struct bfsInfo {
+	Point predecessor;
+	unsigned length;
+	bool visited;
+	bool isSink;
+};
+
 class Graph {
 private:
 	size_t m_size;
-	std::map<Point, std::vector<MyPath>> m_G;
-	std::map<Point, std::vector<MyPath>> m_GInverse;
+	std::vector<std::vector<MyPath>> m_G;
+	std::vector<std::vector<MyPath>> m_GInverse;
 
 public:
 	Graph(size_t size, const std::vector<Path> &paths) : m_size(size) {
+		m_G.resize(size);
+		m_GInverse.resize(size);
 		for (Path p : paths) {
-			if (m_G.count(p.from) == 0) {
-				m_G.insert(p.from, {});
-				m_GInverse.insert(p.from, {});
-			}
-			if (m_G.count(p.to) == 0) {
-				m_G.insert(p.to, {});
-				m_GInverse.insert(p.to, {});
-			}
-
-			m_G.find(p.from)->second.push_back({p.to, p.length});
-			m_GInverse.find(p.to)->second.push_back({p.from, p.length});
+			m_G[p.from].push_back({p.to, p.length});
+			m_GInverse[p.to].push_back({p.from, p.length});
 		}
 	}
 
-	const size_t getSize() {
+	size_t getSize() {
 		return m_size;
 	}
 
 	const std::vector<Point> getSinks() {
 		std::vector<Point> sinks;
-		for (auto v : m_GInverse) {
-			if (v.second.size() == 0) {
-				sinks.push_back(v.first);
+		for (size_t i = 0; i < m_size; ++i) {
+			if (m_G[i].size() == 0) {
+				sinks.push_back((Point)i);
 			}
 		}
 		return sinks;
+	}
+
+	void bfs() {
+		std::queue<Point> q;
+		std::vector<bfsInfo> info;
+		info.resize(getSize());
+
+		for (Point p : getSinks()) {
+			q.push(p);
+			info[p].isSink = true;
+			info[p].visited = true;
+		}
+
+		while (!q.empty()) {
+			Point current = q.front();
+			q.pop();
+			for (MyPath p : m_GInverse[current]) {
+				unsigned newLength = info[current].length + p.m_length;
+				if (info[p.m_to].visited && info[p.m_to].length >= newLength) {
+					continue;
+				}
+				info[p.m_to].length = newLength;
+				info[p.m_to].predecessor = current;
+				info[p.m_to].visited = true;
+				q.push(p.m_to);
+			}
+		}
 	}
 };
 
 std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths) {
 	// construct graph
 	Graph g(points, all_paths);
+	g.bfs();
+	return {};
 }
 
 #ifndef __PROGTEST__
