@@ -136,46 +136,64 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 
 #endif
 
-bool dfs(const Graph &G, std::vector<bool> &visited, Vertex toFind, Vertex visiting, std::vector<Vertex> &pathTaken) {
-	if (visiting == toFind) {
+struct tempBoolStruct {
+	bool visited;
+	bool inPath;
+};
+
+bool dfs(const Graph &G, std::vector<tempBoolStruct> &boolStruct, const std::vector<size_t> &edgeCountFilter, Vertex visiting, std::vector<Vertex> &pathTaken) {
+	pathTaken.push_back(visiting);
+	if (boolStruct[visiting].inPath) {
 		return true;
 	}
-	pathTaken.push_back(visiting);
-	visited[visiting] = true;
+	if (boolStruct[visiting].visited) {
+		pathTaken.pop_back();
+		return false;
+	}
+	boolStruct[visiting].inPath = true;
+	boolStruct[visiting].visited = true;
+
 	for (Vertex toVisit : G[visiting]) {
-		if (visited[toVisit]) {
+		if (edgeCountFilter[toVisit] == 0) {
 			continue;
 		}
-		if (dfs(G, visited, toFind, toVisit, pathTaken)) {
+
+		if (dfs(G, boolStruct, edgeCountFilter, toVisit, pathTaken)) {
 			return true;
 		}
 	}
 	pathTaken.pop_back();
+	boolStruct[visiting].inPath = false;
 	return false;
 }
 
-/**
- * @brief: Finds a cycle in an cyclic oriented graph
- * @param G: The cyclic oriented graph
- * @param u: Vertex to start from
- * @throws std::logic_error: When G is not cyclic, or startVertex is not beginning of cycle
- */
-std::vector<Vertex> findCycle(const Graph &G, std::vector<Vertex> startVertices) {
-	// TODO implement
-	std::vector<bool> visited;
-	visited.resize(G.vertices());
+std::vector<Vertex> shorterInversePath(const std::vector<Vertex> &oldPath) {
+	std::vector<Vertex> toReturn;
+	toReturn.reserve(oldPath.size());
+	toReturn.push_back(oldPath.back());
 
-	for (Vertex startVertex : startVertices) {
-		std::vector<Vertex> pathTaken;
-		pathTaken.push_back(startVertex);
-		for (Vertex toVisit : G[startVertex]) {
-			if (dfs(G, visited, startVertex, toVisit, pathTaken)) {
-				return pathTaken;
-			}
+	for (size_t i = 1; i < oldPath.size(); ++i) {
+		Vertex v = oldPath[oldPath.size() - 1 - i];
+		if (v == toReturn.front()) {
+			break;
 		}
+		toReturn.push_back(v);
 	}
 
-	throw std::logic_error("No cycle was found when calling findCycle");
+	return toReturn;
+}
+
+std::vector<Vertex> findCycle(const Graph &inverseG, const std::vector<size_t> &edgeCountFilter, Vertex startVertex) {
+	std::vector<tempBoolStruct> boolStruct;
+	boolStruct.resize(inverseG.vertices());
+	std::vector<Vertex> pathTaken;
+	pathTaken.reserve(inverseG.vertices());
+
+	if (!dfs(inverseG, boolStruct, edgeCountFilter, startVertex, pathTaken)) {
+		throw std::logic_error("No path found");
+	}
+
+	return shorterInversePath(pathTaken);
 }
 
 // Returns either true and a topological order or false and a cycle
@@ -210,14 +228,15 @@ std::pair<bool, std::vector<Vertex>> topsort(const Graph &G) {
 		}
 	}
 	bool isTopOrder = true;
-	std::vector<Vertex> suspiciousForCycle;
+	Vertex suspiciousForCycle;
 	for (size_t v = 0; v < G.vertices(); ++v) {
 		if (incomingEdgeCount[v] != 0) {
 			isTopOrder = false;
-			suspiciousForCycle.push_back((Vertex)v);
+			suspiciousForCycle = (Vertex)v;
+			break;
 		}
 	}
-	return {isTopOrder, isTopOrder ? sorted : findCycle(G, suspiciousForCycle)};
+	return {isTopOrder, isTopOrder ? sorted : findCycle(G.reversed(), incomingEdgeCount, suspiciousForCycle)};
 }
 
 #ifndef __PROGTEST__
