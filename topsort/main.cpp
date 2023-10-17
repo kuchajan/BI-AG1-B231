@@ -136,13 +136,45 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 
 #endif
 
+std::pair<bool, std::vector<Vertex>> dfs(const Graph &G, std::vector<bool> &visited, Vertex toFind, Vertex visiting, std::vector<Vertex> pathTaken) {
+	if (visiting == toFind) {
+		return {true, pathTaken};
+	}
+	pathTaken.push_back(visiting);
+	visited[visiting] = true;
+	for (Vertex toVisit : G[visiting]) {
+		if (visited[toVisit]) {
+			continue;
+		}
+		auto [completed, pathToReturn] = dfs(G, visited, toFind, toVisit, pathTaken);
+		if (completed) {
+			return {true, pathToReturn};
+		}
+	}
+	return {false, {}};
+}
+
 /**
  * @brief: Finds a cycle in an cyclic oriented graph
  * @param G: The cyclic oriented graph
  * @param u: Vertex to start from
+ * @throws std::logic_error: When G is not cyclic, or startVertex is not beginning of cycle
  */
-std::vector<Vertex> findCycle(const Graph &G, Vertex u) {
+std::vector<Vertex> findCycle(const Graph &G, Vertex startVertex) {
 	// TODO implement
+	std::vector<bool> visited;
+	visited.resize(G.vertices());
+	std::vector<Vertex> pathTaken;
+	pathTaken.push_back(startVertex);
+
+	for (Vertex toVisit : G[startVertex]) {
+		auto [completed, pathToReturn] = dfs(G, visited, startVertex, toVisit, pathTaken);
+		if (completed) {
+			return pathToReturn;
+		}
+	}
+
+	throw std::logic_error("No cycle was found when calling findCycle");
 }
 
 // Returns either true and a topological order or false and a cycle
