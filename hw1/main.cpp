@@ -46,7 +46,8 @@ struct MyPath {
 
 struct bfsInfo {
 	Point predecessor;
-	unsigned length;
+	unsigned length_total;
+	unsigned length_prev;
 	bool visited;
 	bool isSink;
 };
@@ -96,11 +97,12 @@ public:
 			Point current = q.front();
 			q.pop();
 			for (MyPath p : m_GInverse[current]) {
-				unsigned newLength = info[current].length + p.m_length;
-				if (info[p.m_to].visited && info[p.m_to].length >= newLength) {
+				unsigned newLength = info[current].length_total + p.m_length;
+				if (info[p.m_to].visited && info[p.m_to].length_total >= newLength) {
 					continue;
 				}
-				info[p.m_to].length = newLength;
+				info[p.m_to].length_total = newLength;
+				info[p.m_to].length_prev = info[current].length_total;
 				info[p.m_to].predecessor = current;
 				info[p.m_to].visited = true;
 				q.push(p.m_to);
@@ -111,19 +113,19 @@ public:
 	}
 };
 
-std::pair<unsigned, Point> findMax(size_t points, const std::vector<bfsInfo> &info) {
+Point findMax(size_t points, const std::vector<bfsInfo> &info) {
 	// find the max, filter the result
 	Point begin;
 	unsigned length = 0;
 	bool first = true;
 	for (size_t v = 0; v < points; ++v) {
-		if (length < info[v].length || first) {
+		if (length < info[v].length_total || first) {
 			first = false;
-			length = info[v].length;
+			length = info[v].length_total;
 			begin = (Point)v;
 		}
 	}
-	return {length, begin};
+	return begin;
 }
 
 std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_paths) {
@@ -131,9 +133,15 @@ std::vector<Path> longest_track(size_t points, const std::vector<Path> &all_path
 	Graph g(points, all_paths);
 	std::vector<bfsInfo> info = g.bfs();
 
-	auto [length, max] = findMax(points, info);
+	Point currentPoint = findMax(points, info);
 
-	return {};
+	std::vector<Path> result;
+	while (!info[currentPoint].isSink) {
+		result.push_back(Path(currentPoint, info[currentPoint].predecessor, info[currentPoint].length_total - info[currentPoint].length_prev));
+		currentPoint = info[currentPoint].predecessor;
+	}
+
+	return result;
 }
 
 #ifndef __PROGTEST__
