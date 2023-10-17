@@ -160,17 +160,19 @@ std::pair<bool, std::vector<Vertex>> dfs(const Graph &G, std::vector<bool> &visi
  * @param u: Vertex to start from
  * @throws std::logic_error: When G is not cyclic, or startVertex is not beginning of cycle
  */
-std::vector<Vertex> findCycle(const Graph &G, Vertex startVertex) {
+std::vector<Vertex> findCycle(const Graph &G, std::vector<Vertex> startVertices) {
 	// TODO implement
 	std::vector<bool> visited;
 	visited.resize(G.vertices());
-	std::vector<Vertex> pathTaken;
-	pathTaken.push_back(startVertex);
 
-	for (Vertex toVisit : G[startVertex]) {
-		auto [completed, pathToReturn] = dfs(G, visited, startVertex, toVisit, pathTaken);
-		if (completed) {
-			return pathToReturn;
+	for (Vertex startVertex : startVertices) {
+		std::vector<Vertex> pathTaken;
+		pathTaken.push_back(startVertex);
+		for (Vertex toVisit : G[startVertex]) {
+			auto [completed, pathToReturn] = dfs(G, visited, startVertex, toVisit, pathTaken);
+			if (completed) {
+				return pathToReturn;
+			}
 		}
 	}
 
@@ -208,13 +210,15 @@ std::pair<bool, std::vector<Vertex>> topsort(const Graph &G) {
 			}
 		}
 	}
-
+	bool isTopOrder = true;
+	std::vector<Vertex> suspiciousForCycle;
 	for (size_t v = 0; v < G.vertices(); ++v) {
 		if (incomingEdgeCount[v] != 0) {
-			return {false, findCycle(G, (Vertex)v)};
+			isTopOrder = false;
+			suspiciousForCycle.push_back((Vertex)v);
 		}
 	}
-	return {true, sorted};
+	return {isTopOrder, isTopOrder ? sorted : findCycle(G, suspiciousForCycle)};
 }
 
 #ifndef __PROGTEST__
