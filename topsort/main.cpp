@@ -136,64 +136,54 @@ std::ostream &operator<<(std::ostream &out, const Graph &G) {
 
 #endif
 
-struct tempBoolStruct {
-	bool visited;
-	bool inPath;
-};
+std::vector<Vertex> findCycle(const Graph &inversedG, const std::vector<size_t> &edgeCount, Vertex startVertex) {
+	std::vector<Vertex> predecessor;
+	std::vector<bool> visited;
+	visited.resize(inversedG.vertices());
+	predecessor.resize(inversedG.vertices());
 
-bool dfs(const Graph &G, std::vector<tempBoolStruct> &boolStruct, const std::vector<size_t> &edgeCountFilter, Vertex visiting, std::vector<Vertex> &pathTaken) {
-	pathTaken.push_back(visiting);
-	if (boolStruct[visiting].inPath) {
-		return true;
-	}
-	if (boolStruct[visiting].visited) {
-		pathTaken.pop_back();
-		return false;
-	}
-	boolStruct[visiting].inPath = true;
-	boolStruct[visiting].visited = true;
-
-	for (Vertex toVisit : G[visiting]) {
-		if (edgeCountFilter[toVisit] == 0) {
+	std::deque<Vertex> stack;
+	stack.push_back(startVertex);
+	// visited[startVertex] = true;
+	predecessor[startVertex] = ROOT;
+	Vertex startLoop = (Vertex)0, endLoop = (Vertex)0;
+	while (!stack.empty()) {
+		Vertex visiting = stack.back();
+		stack.pop_back();
+		//! surely there is another way...
+		if (visited[visiting]) {
 			continue;
 		}
-
-		if (dfs(G, boolStruct, edgeCountFilter, toVisit, pathTaken)) {
-			return true;
+		visited[visiting] = true;
+		bool cycleFound = false;
+		for (Vertex child : inversedG[visiting]) {
+			if (edgeCount[child] == 0) {
+				continue;
+			}
+			if (visited[child]) {
+				cycleFound = true;
+				startLoop = visiting;
+				endLoop = child;
+				break;
+			}
+			predecessor[child] = visiting;
+			stack.push_back(child);
+		}
+		if (cycleFound) {
+			Vertex current = startLoop;
+			std::vector<Vertex> cycle = {startLoop};
+			while (current != endLoop) {
+				current = predecessor[current];
+				cycle.push_back(current);
+				if (cycle.size() > inversedG.vertices()) {
+					throw std::logic_error("Cycle cannot be larger than the graph");
+				}
+			}
+			return cycle;
 		}
 	}
-	pathTaken.pop_back();
-	boolStruct[visiting].inPath = false;
-	return false;
-}
 
-std::vector<Vertex> shorterInversePath(const std::vector<Vertex> &oldPath) {
-	std::vector<Vertex> toReturn;
-	toReturn.reserve(oldPath.size());
-	toReturn.push_back(oldPath.back());
-
-	for (size_t i = 1; i < oldPath.size(); ++i) {
-		Vertex v = oldPath[oldPath.size() - 1 - i];
-		if (v == toReturn.front()) {
-			break;
-		}
-		toReturn.push_back(v);
-	}
-
-	return toReturn;
-}
-
-std::vector<Vertex> findCycle(const Graph &inverseG, const std::vector<size_t> &edgeCountFilter, Vertex startVertex) {
-	std::vector<tempBoolStruct> boolStruct;
-	boolStruct.resize(inverseG.vertices());
-	std::vector<Vertex> pathTaken;
-	pathTaken.reserve(inverseG.vertices());
-
-	if (!dfs(inverseG, boolStruct, edgeCountFilter, startVertex, pathTaken)) {
-		throw std::logic_error("No path found");
-	}
-
-	return shorterInversePath(pathTaken);
+	throw std::logic_error("No cycle found");
 }
 
 // Returns either true and a topological order or false and a cycle
