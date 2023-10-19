@@ -252,6 +252,11 @@ const Graph SMALL_CYCLIC[] = {
 	{{{1}, {2, 5}, {3}, {4}, {0}, {4}}},
 };
 
+const Graph MY_TESTS[] = {
+	{{{1, 2}, {3}, {3}, {4}, {0}}},
+	{{{1}, {2, 3}, {0, 3}, {0}}},
+};
+
 struct RandomGraphGenerator {
 	RandomGraphGenerator(uint32_t seed) : my_rand(seed) {}
 
@@ -369,6 +374,10 @@ void test_topsort(const Graph &G) {
 }
 
 void run_tests() {
+	std::cout << "My own test" << std::endl;
+	for (const Graph &G : MY_TESTS)
+		test_topsort(G);
+
 	std::cout << "Small DAGs..." << std::endl;
 	RandomGraphGenerator rgg(53323);
 	for (const Graph &G : SMALL_DAGS)
