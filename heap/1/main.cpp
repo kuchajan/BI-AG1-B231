@@ -48,8 +48,13 @@ std::string fmt(const char *f, ...) {
 // TODO implement
 template <typename T, typename Comp = std::less<T>>
 struct BinaryHeap {
-	BinaryHeap();
-	explicit BinaryHeap(Comp comp);
+private:
+	std::vector<T> m_data;
+	Comp m_comp;
+
+public:
+	BinaryHeap() {}
+	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
 
 	bool empty() const;
 	size_t size() const;
