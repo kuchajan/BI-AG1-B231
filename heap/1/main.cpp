@@ -52,6 +52,17 @@ private:
 	std::vector<T> m_data;
 	Comp m_comp;
 
+	size_t getChildIndex(size_t parent, size_t ith) const {
+		if (ith > 1) {
+			throw std::invalid_argument("Child cannot be more than 0th or 1st");
+		}
+		return 2 * parent + 1 + ith;
+	}
+
+	size_t getParentIndex(size_t child) const {
+		return (child - 1) / 2;
+	}
+
 public:
 	BinaryHeap() {}
 	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
