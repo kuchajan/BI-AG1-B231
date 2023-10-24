@@ -76,8 +76,36 @@ public:
 		return m_data.size();
 	}
 
-	const T &min() const;
-	T extract_min();
+	const T &min() const {
+		return m_data.at(0); // will throw if empty
+	}
+
+	T extract_min() {
+		// remove min
+		T min = m_data.at(0); // will throw if empty
+		m_data[0] = m_data[m_data.size() - 1];
+		m_data.pop_back();
+		// bubble down
+		size_t visiting = 0;
+		while (getChildIndex(visiting, 0) < m_data.size()) {
+			size_t leftChild = getChildIndex(visiting, 0);
+			size_t rightChild = getChildIndex(visiting, 1);
+
+			size_t smallerChild = leftChild;
+			if (rightChild < m_data.size() && m_comp(m_data[rightChild], m_data[leftChild])) {
+				smallerChild = rightChild;
+			}
+
+			if (!m_comp(m_data[smallerChild], m_data[visiting])) {
+				// parent is smaller or equal than child
+				break;
+			}
+			std::swap(m_data[visiting], m_data[smallerChild]);
+			visiting = smallerChild;
+		}
+
+		return min;
+	}
 
 	void push(T val) {
 		size_t visiting = m_data.size();
