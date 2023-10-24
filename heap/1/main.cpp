@@ -107,9 +107,9 @@ public:
 		return min;
 	}
 
-	void push(T val) {
+	void push(const T &&val) {
 		size_t visiting = m_data.size();
-		m_data.push_back(val);
+		m_data.emplace_back(std::move(val));
 
 		// bubble up
 		while (visiting != 0) {
