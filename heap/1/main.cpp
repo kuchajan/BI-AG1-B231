@@ -260,6 +260,24 @@ private:
 
 #undef CHECK
 
+class testTypeName {
+private:
+	int m_data;
+
+public:
+	testTypeName(int data) : m_data(data) {}
+	testTypeName(const testTypeName &t) {
+		throw std::logic_error("Can't use copy constructor");
+		(void)t;
+	}
+	testTypeName(testTypeName &&t) { std::swap(m_data, t.m_data); }
+	~testTypeName() {}
+
+	bool operator<(const testTypeName &right) const {
+		return this->m_data < right.m_data;
+	}
+};
+
 template <typename Heap>
 void run_test(int max, bool check_structure = false) {
 	Heap H;
@@ -304,6 +322,8 @@ int main() {
 	}
 
 	try {
+		std::cout << "My test..." << std::endl;
+		run_test<Tester<testTypeName>>(20);
 		std::cout << "Small test..." << std::endl;
 		run_test<Tester<int>>(20);
 		run_test<Tester<int>>(20, true);
