@@ -83,7 +83,7 @@ public:
 	T extract_min() {
 		// remove min
 		T min = m_data.at(0); // will throw if empty
-		m_data[0] = m_data[m_data.size() - 1];
+		std::swap(m_data[0], m_data.back());
 		m_data.pop_back();
 		// bubble down
 		size_t visiting = 0;
