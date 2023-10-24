@@ -62,7 +62,7 @@ size_t getParentIndex(size_t child) {
 template <typename T, typename Comp = std::less<T>>
 struct BinaryHeap {
 private:
-	std::vector<T> m_data;
+	std::vector<std::shared_ptr<T>> m_data;
 	Comp m_comp;
 
 public:
@@ -77,12 +77,12 @@ public:
 	}
 
 	const T &min() const {
-		return m_data.at(0); // will throw if empty
+		return *(m_data.at(0)); // will throw if empty
 	}
 
 	T extract_min() {
 		// remove min
-		T min = m_data.at(0); // will throw if empty
+		std::shared_ptr<T> min = m_data.at(0); // will throw if empty
 		std::swap(m_data[0], m_data.back());
 		m_data.pop_back();
 		// bubble down
@@ -92,11 +92,11 @@ public:
 			size_t rightChild = getChildIndex(visiting, 1);
 
 			size_t smallerChild = leftChild;
-			if (rightChild < m_data.size() && m_comp(m_data[rightChild], m_data[leftChild])) {
+			if (rightChild < m_data.size() && m_comp(*m_data[rightChild], *m_data[leftChild])) {
 				smallerChild = rightChild;
 			}
 
-			if (!m_comp(m_data[smallerChild], m_data[visiting])) {
+			if (!m_comp(*m_data[smallerChild], *m_data[visiting])) {
 				// parent is smaller or equal than child
 				break;
 			}
@@ -104,17 +104,17 @@ public:
 			visiting = smallerChild;
 		}
 
-		return min;
+		return *min;
 	}
 
 	void push(const T &&val) {
 		size_t visiting = m_data.size();
-		m_data.emplace_back(std::move(val));
+		m_data.push_back(std::make_shared<T>(std::move(val)));
 
 		// bubble up
 		while (visiting != 0) {
 			size_t parent = getParentIndex(visiting);
-			if (m_comp(m_data[parent], m_data[visiting]) || !m_comp(m_data[visiting], m_data[parent])) {
+			if (m_comp(*m_data[parent], *m_data[visiting]) || !m_comp(*m_data[visiting], *m_data[parent])) {
 				// parent is smaller
 				break;
 			}
@@ -126,7 +126,7 @@ public:
 	// Helpers to enable testing.
 	struct TestHelper {
 		static const T &index_to_value(const BinaryHeap &H, size_t index) {
-			return H.m_data[index];
+			return *(H.m_data[index]);
 		}
 
 		static size_t root_index() { return 0; }
