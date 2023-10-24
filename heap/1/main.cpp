@@ -266,10 +266,7 @@ private:
 
 public:
 	testTypeName(int data) : m_data(data) {}
-	testTypeName(const testTypeName &t) {
-		throw std::logic_error("Can't use copy constructor");
-		(void)t;
-	}
+	testTypeName(const testTypeName &) = delete;
 	testTypeName(testTypeName &&t) { std::swap(m_data, t.m_data); }
 	~testTypeName() {}
 
