@@ -79,7 +79,21 @@ public:
 	const T &min() const;
 	T extract_min();
 
-	void push(T val);
+	void push(T val) {
+		size_t visiting = m_data.size();
+		m_data.push_back(val);
+
+		// bubble up
+		while (visiting != 0) {
+			size_t parent = getParentIndex(visiting);
+			if (m_comp(m_data[parent], m_data[visiting]) || !m_comp(m_data[visiting], m_data[parent])) {
+				// parent is smaller
+				break;
+			}
+			std::swap(m_data[visiting], m_data[parent]);
+			visiting = parent;
+		}
+	}
 
 	// Helpers to enable testing.
 	struct TestHelper {
