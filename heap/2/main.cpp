@@ -287,11 +287,6 @@ public:
 			return getChildIndex(parent, ith);
 		}
 	};
-
-private:
-	// Convert ref value to index in heap (not mandatory for tests
-	// but it might help with implementation of other methods).
-	size_t ref_to_index(const Ref &ref) const;
 };
 
 #ifndef __PROGTEST__
