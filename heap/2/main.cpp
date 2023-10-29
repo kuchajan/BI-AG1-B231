@@ -181,6 +181,12 @@ private:
 	std::vector<Node> m_data;
 	Comp m_comp;
 
+	void mySwap(size_t index1, size_t index2) {
+		m_data[index1].index = index2;
+		m_data[index2].index = index1;
+		std::swap(m_data[index1], m_data[index2]);
+	}
+
 public:
 	BinaryHeap() {}
 	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
