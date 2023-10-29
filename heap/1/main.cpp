@@ -82,8 +82,8 @@ public:
 
 	T extract_min() {
 		// remove min
-		T min = m_data.at(0); // will throw if empty
-		std::swap(m_data[0], m_data.back());
+		T min = std::move(m_data.at(0)); // will throw if empty
+		std::swap(m_data.front(), m_data.back());
 		m_data.pop_back();
 		// bubble down
 		size_t visiting = 0;
@@ -309,6 +309,11 @@ void my_test() {
 	for (int i = 0; i < 20; ++i) {
 		H.push((i * 991) % (5 * 20));
 	}
+
+	H.empty();
+	H.size();
+	H.min();
+	H.extract_min();
 }
 
 template <typename T, typename Cmp = std::less<T>>
