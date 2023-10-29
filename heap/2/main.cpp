@@ -275,11 +275,17 @@ public:
 
 	// Helpers to enable testing.
 	struct TestHelper {
-		static const T &index_to_value(const BinaryHeap &H, size_t index);
+		static const T &index_to_value(const BinaryHeap &H, size_t index) {
+			return H.m_data[index].value;
+		}
 
 		static size_t root_index() { return 0; }
-		static size_t parent(size_t index);
-		static size_t child(size_t parent, size_t ith);
+		static size_t parent(size_t index) {
+			return getParentIndex(index);
+		}
+		static size_t child(size_t parent, size_t ith) {
+			return getChildIndex(parent, ith);
+		}
 	};
 
 private:
