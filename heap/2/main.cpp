@@ -218,6 +218,15 @@ private:
 		}
 	}
 
+	void bubble(size_t index) {
+		// decide, whether to bubble up or down
+		if (index != 0 && m_comp(m_data[index].value, m_data[getParentIndex(index)].value)) {
+			bubbleUp(index);
+			return;
+		}
+		bubbleDown(index);
+	}
+
 public:
 	BinaryHeap() {}
 	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
