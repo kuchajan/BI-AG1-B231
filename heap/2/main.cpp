@@ -232,7 +232,16 @@ public:
 	const T &min() const {
 		return m_data.at(0).value;
 	}
-	T extract_min();
+	T extract_min() {
+		// remove min
+		T toRet = std::move(m_data.at(0).value);
+		mySwap(0, m_data.size() - 1);
+		m_data.pop_back();
+
+		bubbleDown(0);
+
+		return toRet;
+	}
 
 	struct Ref : private LinkTo<const Node> {
 		using LinkTo<const Node>::LinkTo;
@@ -242,7 +251,14 @@ public:
 		friend struct BinaryHeap;
 	};
 
-	Ref push(T val);
+	Ref push(T val) {
+		m_data.emplace_back(std::move(Node(std::move(val), m_data.size())));
+		Ref ref(m_data.back());
+
+		bubbleUp(m_data.size() - 1);
+
+		return ref;
+	}
 
 	// Joined increase / decrease method.
 	// Changes key represented by ref to f(key)
