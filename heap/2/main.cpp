@@ -277,10 +277,23 @@ public:
 	// escape f. After f returns, the heap should check how
 	// the value changed and fix its structure accordingly.
 	template <typename Fun>
-	void change(const Ref &ref, Fun f);
+	void change(const Ref &ref, Fun f) {
+		f(m_data[ref.getIndex()].value);
+		bubble(ref.getIndex());
+	}
 
 	// Remove the value referenced by ref from the heap.
-	T erase(const Ref &ref);
+	T erase(const Ref &ref) {
+		size_t index = ref.getIndex();
+
+		mySwap(index, m_data.size() - 1);
+		T toRet = std::move(m_data.back().value);
+		m_data.pop_back();
+
+		bubble(index);
+
+		return toRet;
+	}
 
 	// Helpers to enable testing.
 	struct TestHelper {
