@@ -159,14 +159,17 @@ private:
 // TODO implement
 template <typename T, typename Comp = std::less<T>>
 class BinaryHeap {
+private:
 	struct Node : Link {
 		Node(T value) : value(std::move(value)) {}
 		T value;
 	};
+	std::vector<Node> m_data;
+	Comp m_comp;
 
 public:
-	BinaryHeap();
-	explicit BinaryHeap(Comp comp);
+	BinaryHeap() {}
+	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
 
 	bool empty() const;
 	size_t size() const;
