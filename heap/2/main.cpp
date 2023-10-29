@@ -205,6 +205,7 @@ public:
 		using LinkTo<const Node>::LinkTo;
 		const T &operator*() const { return this->get()->value; }
 		const T *operator->() const { return &operator*(); }
+		size_t getIndex() const { return this->get()->index; }
 		friend struct BinaryHeap;
 	};
 
