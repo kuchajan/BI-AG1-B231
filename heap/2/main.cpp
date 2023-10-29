@@ -174,8 +174,9 @@ template <typename T, typename Comp = std::less<T>>
 class BinaryHeap {
 private:
 	struct Node : Link {
-		Node(T value) : value(std::move(value)) {}
+		Node(T value, size_t index) : value(std::move(value)), index(index) {}
 		T value;
+		size_t index;
 	};
 	std::vector<Node> m_data;
 	Comp m_comp;
