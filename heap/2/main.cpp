@@ -191,8 +191,12 @@ public:
 	BinaryHeap() {}
 	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
 
-	bool empty() const;
-	size_t size() const;
+	bool empty() const {
+		return m_data.size() == 0;
+	}
+	size_t size() const {
+		return m_data.size();
+	}
 
 	const T &min() const;
 	T extract_min();
