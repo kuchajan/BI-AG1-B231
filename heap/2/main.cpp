@@ -156,7 +156,20 @@ private:
 
 #endif
 
-// TODO implement
+size_t getChildIndex(size_t parent, size_t ith) {
+	if (ith > 1) {
+		throw std::invalid_argument("Child cannot be anything but 0th or 1st");
+	}
+	return 2 * parent + 1 + ith;
+}
+
+size_t getParentIndex(size_t child) {
+	if (child == 0) {
+		throw std::invalid_argument("0 is root and thus has no parent");
+	}
+	return (child - 1) / 2;
+}
+
 template <typename T, typename Comp = std::less<T>>
 class BinaryHeap {
 private:
