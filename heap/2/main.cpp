@@ -187,6 +187,37 @@ private:
 		std::swap(m_data[index1], m_data[index2]);
 	}
 
+	void bubbleUp(size_t visiting) {
+		while (visiting != 0) {
+			size_t parent = getParentIndex(visiting);
+			if (m_comp(m_data[parent].value, m_data[visiting].value) || !m_comp(m_data[visiting].value, m_data[parent].value)) {
+				// parent is smaller
+				break;
+			}
+			mySwap(visiting, parent);
+			visiting = parent;
+		}
+	}
+
+	void bubbleDown(size_t visiting) {
+		while (getChildIndex(visiting, 0) < m_data.size()) {
+			size_t leftChild = getChildIndex(visiting, 0);
+			size_t rightChild = getChildIndex(visiting, 1);
+
+			size_t smallerChild = leftChild;
+			if (rightChild < m_data.size() && m_comp(m_data[rightChild].value, m_data[leftChild].value)) {
+				smallerChild = rightChild;
+			}
+
+			if (!m_comp(m_data[smallerChild].value, m_data[visiting].value)) {
+				// parent is smaller or equal than child
+				break;
+			}
+			mySwap(visiting, smallerChild);
+			visiting = smallerChild;
+		}
+	}
+
 public:
 	BinaryHeap() {}
 	explicit BinaryHeap(Comp comp) : m_comp(comp) {}
