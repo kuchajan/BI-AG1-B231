@@ -198,7 +198,9 @@ public:
 		return m_data.size();
 	}
 
-	const T &min() const;
+	const T &min() const {
+		return m_data.at(0).value;
+	}
 	T extract_min();
 
 	struct Ref : private LinkTo<const Node> {
