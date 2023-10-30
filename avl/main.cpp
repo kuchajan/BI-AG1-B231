@@ -112,6 +112,17 @@ struct Tree {
 	}
 	bool erase(const T &value);
 
+	void recursiveDestruct(Node *toDelete) {
+		if (toDelete) {
+			recursiveDestruct(toDelete->m_leftChild);
+			recursiveDestruct(toDelete->m_rightChild);
+			delete toDelete;
+		}
+	}
+	~Tree() {
+		recursiveDestruct(m_root);
+	}
+
 	// Needed to test the structure of the tree.
 	struct TesterInterface {
 		static const Node *root(const Tree *t) { return t->m_root; }
