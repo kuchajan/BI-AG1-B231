@@ -62,11 +62,11 @@ struct Tree {
 		}
 
 		bool operator<(const Node &other) const {
-			return std::less(m_value, other.m_value);
+			return std::less<T>{}(m_value, other.m_value);
 		}
 
 		bool operator>(const Node &other) const {
-			return std::less(other.m_value, m_value);
+			return std::less<T>{}(other.m_value, m_value);
 		}
 
 		bool operator==(const Node &other) const {
