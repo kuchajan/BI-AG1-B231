@@ -129,6 +129,10 @@ struct Tree {
 	}
 	bool erase(const T &value);
 
+	Tree() {
+		m_root = nullptr;
+		m_size = 0;
+	}
 	void recursiveDestruct(Node *toDelete) {
 		if (toDelete) {
 			recursiveDestruct(toDelete->m_leftChild);
