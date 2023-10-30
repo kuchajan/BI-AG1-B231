@@ -145,8 +145,8 @@ struct Tree {
 		static const Node *root(const Tree *t) { return t->m_root; }
 		// Parent of root must be nullptr
 		static const Node *parent(const Node *n) { return n->m_parent; }
-		static const Node *right(const Node *n) { return n->m_right; }
-		static const Node *left(const Node *n) { return n->m_left; }
+		static const Node *right(const Node *n) { return n->m_rightChild; }
+		static const Node *left(const Node *n) { return n->m_leftChild; }
 		static const T &value(const Node *n) { return n->m_value; }
 	};
 };
