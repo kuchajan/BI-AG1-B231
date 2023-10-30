@@ -118,9 +118,9 @@ struct Tree {
 			visiting = left ? visiting->m_leftChild : visiting->m_rightChild;
 		}
 		if (left) {
-			visiting->m_leftChild = toInsert;
+			toInsert->m_parent->m_leftChild = toInsert;
 		} else {
-			visiting->m_rightChild = toInsert;
+			toInsert->m_parent->m_rightChild = toInsert;
 		}
 		++m_size;
 		// todo: balance
