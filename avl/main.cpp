@@ -72,6 +72,10 @@ struct Tree {
 		bool operator==(const Node &other) const {
 			return !(*this < other) && !(other < *this);
 		}
+
+		bool operator!=(const Node &other) const {
+			return (*this < other) || (other < *this);
+		}
 	};
 
 	Node *m_root;
@@ -79,7 +83,20 @@ struct Tree {
 	size_t size() const {
 		return m_size;
 	}
-	const T *find(const T &value) const;
+
+	Node *findByValue(const T &value) const {
+		Node toFind(value);
+		Node *visiting = m_root;
+		while (visiting != nullptr && *visiting != toFind) {
+			visiting = *visiting > toFind ? visiting->m_leftChild : visiting->m_rightChild;
+		}
+		return visiting;
+	}
+
+	const T *find(const T &value) const {
+		Node *found = findByValue(value);
+		return found ? &(found->m_value) : nullptr;
+	}
 	bool insert(T value) {
 		Node *toInsert = new Node(value);
 		// if tree is empty
