@@ -75,9 +75,41 @@ struct Tree {
 	};
 
 	Node *m_root;
-	size_t size() const;
+	size_t m_size;
+	size_t size() const {
+		return m_size;
+	}
 	const T *find(const T &value) const;
-	bool insert(T value);
+	bool insert(T value) {
+		Node *toInsert = new Node(value);
+		// if tree is empty
+		if (!m_root) {
+			m_root = toInsert;
+			++m_size;
+			return true;
+		}
+
+		Node *visiting = m_root;
+		bool left = true;
+		while (visiting) {
+			toInsert->m_parent = visiting;
+			if (*toInsert == *visiting) {
+				delete toInsert;
+				return false;
+			}
+			left = *toInsert < *visiting;
+			visiting = left ? visiting->m_leftChild : visiting->m_rightChild;
+		}
+		if (left) {
+			visiting->m_leftChild = toInsert;
+		} else {
+			visiting->m_rightChild = toInsert;
+		}
+		++m_size;
+		// todo: balance
+
+		return true;
+	}
 	bool erase(const T &value);
 
 	// Needed to test the structure of the tree.
