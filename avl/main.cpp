@@ -76,6 +76,12 @@ struct Tree {
 		bool operator!=(const Node &other) const {
 			return (*this < other) || (other < *this);
 		}
+
+		void swapValues(Node &other) {
+			T temp = m_value;
+			m_value = other.m_value;
+			other.m_value = temp;
+		}
 	};
 
 	Node *m_root;
