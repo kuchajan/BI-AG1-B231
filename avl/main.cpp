@@ -47,23 +47,47 @@ namespace config {
 // TODO implement
 template <typename T>
 struct Tree {
+	struct Node {
+		Node *m_parent;
+		Node *m_leftChild;
+		Node *m_rightChild;
+		T m_value;
+		char m_sign;
+		Node(T value) : m_value(value) {
+			// sanity check
+			m_parent = nullptr;
+			m_leftChild = nullptr;
+			m_rightChild = nullptr;
+			m_sign = 0;
+		}
+
+		bool operator<(const Node &other) const {
+			return std::less(m_value, other.m_value);
+		}
+
+		bool operator>(const Node &other) const {
+			return std::less(other.m_value, m_value);
+		}
+
+		bool operator==(const Node &other) const {
+			return !(*this < other) && !(other < *this);
+		}
+	};
+
+	Node *m_root;
 	size_t size() const;
 	const T *find(const T &value) const;
 	bool insert(T value);
 	bool erase(const T &value);
 
 	// Needed to test the structure of the tree.
-	// Replace Node with the real type of your nodes
-	// and implementations with the ones matching
-	// your attributes.
 	struct TesterInterface {
-		// using Node = ...
-		static const Node *root(const Tree *t) { return t->root; }
-		// Parent of root must be nullptr, ignore if config::PARENT_POINTERS == false
-		static const Node *parent(const Node *n) { return n->parent; }
-		static const Node *right(const Node *n) { return n->right; }
-		static const Node *left(const Node *n) { return n->left; }
-		static const T &value(const Node *n) { return n->value; }
+		static const Node *root(const Tree *t) { return t->m_root; }
+		// Parent of root must be nullptr
+		static const Node *parent(const Node *n) { return n->m_parent; }
+		static const Node *right(const Node *n) { return n->m_right; }
+		static const Node *left(const Node *n) { return n->m_left; }
+		static const T &value(const Node *n) { return n->m_value; }
 	};
 };
 
