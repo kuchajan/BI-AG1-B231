@@ -241,7 +241,8 @@ struct Tree {
 			toInsert->m_parent->m_rightChild = toInsert;
 		}
 		++m_size;
-		// todo: balance
+
+		balance(toInsert->m_parent);
 
 		return true;
 	}
@@ -263,7 +264,7 @@ struct Tree {
 			return false;
 		}
 
-		while (toDelete) {
+		while (true) {
 			// case 2 - this node is a leaf
 			if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
 				// if parent exists, remove this node as it's child
@@ -274,9 +275,6 @@ struct Tree {
 						toDelete->m_parent->m_rightChild = nullptr;
 					}
 				}
-				// delete the node itself
-				delete toDelete;
-				toDelete = nullptr;
 				break;
 			}
 			// case 3 - this node has one child
@@ -294,9 +292,6 @@ struct Tree {
 				} else { // parent doesn't exists - toDelete is root - set this child as root
 					m_root = toDelete->m_leftChild;
 				}
-				// delete the node itself
-				delete toDelete;
-				toDelete = nullptr;
 				break;
 			}
 			// case 3.2 - the child is right
@@ -313,9 +308,6 @@ struct Tree {
 				} else { // parent doesn't exists - toDelete is root - set this child as root
 					m_root = toDelete->m_rightChild;
 				}
-				// delete the node itself
-				delete toDelete;
-				toDelete = nullptr;
 				break;
 			}
 			// case 4 - this node has two children
@@ -324,8 +316,11 @@ struct Tree {
 			toDelete = min;
 		}
 
-		// todo: balance
+		Node *balanceFrom = toDelete->m_parent;
+		// delete the node itself
+		delete toDelete;
 		--m_size;
+		balance(balanceFrom);
 		return true;
 	}
 
