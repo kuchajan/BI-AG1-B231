@@ -38,7 +38,7 @@ private:
 
 namespace config {
 	// Enable to check that the tree is AVL balanced.
-	inline constexpr bool CHECK_DEPTH = false;
+	inline constexpr bool CHECK_DEPTH = true;
 
 	// Disable if your implementation does not have parent pointers
 	inline constexpr bool PARENT_POINTERS = true;
