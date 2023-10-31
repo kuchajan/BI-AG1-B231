@@ -190,6 +190,27 @@ struct Tree {
 		return visiting;
 	}
 
+	void balance(Node *visiting) {
+		while (visiting) {
+			// calculate new height
+			visiting->calculateNewHeight();
+			if (visiting->m_sign < -1) {
+				if (visiting->m_leftChild && visiting->m_leftChild->m_sign == 1) {
+					leftRightRotate(visiting);
+				} else {
+					rightRotate(visiting);
+				}
+			} else if (visiting->m_sign > 1) {
+				if (visiting->m_rightChild && visiting->m_rightChild->m_sign == -1) {
+					rightLeftRotate(visiting);
+				} else {
+					leftRotate(visiting);
+				}
+			}
+			visiting = visiting->m_parent;
+		}
+	}
+
 	const T *find(const T &value) const {
 		Node *found = findByValue(value);
 		return found ? &(found->m_value) : nullptr;
