@@ -79,36 +79,26 @@ struct Tree {
 			return (*this < other) || (other < *this);
 		}
 
-		bool calculateNewSign() {
-			ssize_t newSign = 0;
+		void calculateNewSign() {
+			m_sign = 0;
 			if (m_leftChild) {
-				newSign -= m_leftChild->m_height + 1;
+				m_sign -= m_leftChild->m_height + 1;
 			}
 			if (m_rightChild) {
-				newSign += m_rightChild->m_height + 1;
+				m_sign += m_rightChild->m_height + 1;
 			}
-
-			if (m_sign == newSign) {
-				return false;
-			}
-			m_sign = newSign;
-			return true;
 		}
 
-		bool calculateNewHeight() {
-			size_t maxHeight = 0;
+		void calculateNewHeight() {
+			m_height = 0;
 			if (m_leftChild) {
-				maxHeight = m_leftChild->m_height + 1;
+				m_height = m_leftChild->m_height + 1;
 			}
-			if (m_rightChild && maxHeight < m_rightChild->m_height + 1) {
-				maxHeight = m_rightChild->m_height + 1;
+			if (m_rightChild && m_height < m_rightChild->m_height + 1) {
+				m_height = m_rightChild->m_height + 1;
 			}
-			if (m_height == maxHeight) {
-				return calculateNewSign();
-			}
-			m_height = maxHeight;
+
 			calculateNewSign();
-			return true;
 		}
 
 		void swapValues(Node &other) {
