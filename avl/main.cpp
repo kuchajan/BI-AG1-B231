@@ -52,13 +52,15 @@ struct Tree {
 		Node *m_leftChild;
 		Node *m_rightChild;
 		T m_value;
-		char m_sign;
+		ssize_t m_sign;
+		size_t m_height;
 		Node(T value) : m_value(value) {
 			// sanity check
 			m_parent = nullptr;
 			m_leftChild = nullptr;
 			m_rightChild = nullptr;
 			m_sign = 0;
+			m_height = 0;
 		}
 
 		bool operator<(const Node &other) const {
@@ -75,6 +77,32 @@ struct Tree {
 
 		bool operator!=(const Node &other) const {
 			return (*this < other) || (other < *this);
+		}
+
+		void calculateNewSign() {
+			m_sign = 0;
+			if (m_leftChild) {
+				m_sign -= m_leftChild->m_height;
+			}
+			if (m_rightChild) {
+				m_sign += m_rightChild->m_height;
+			}
+		}
+
+		bool calculateNewHeight() {
+			size_t maxHeight = 0;
+			if (m_leftChild) {
+				maxHeight = m_leftChild->m_height;
+			}
+			if (m_rightChild && maxHeight < m_rightChild->m_height) {
+				maxHeight = visiting->m_rightChild;
+			}
+			++maxHeight;
+			if (m_height == maxHeight) {
+				return false;
+			}
+			visiting->m_height = maxHeight;
+			return true;
 		}
 
 		void swapValues(Node &other) {
