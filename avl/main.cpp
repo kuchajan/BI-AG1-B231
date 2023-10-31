@@ -111,64 +111,6 @@ struct Tree {
 			return true;
 		}
 
-		void leftRotate() {
-			Node *parent = m_parent;
-			Node *y = m_rightChild;
-
-			Node *subtreeB = y->m_leftChild;
-
-			m_parent = y;
-			y->m_leftChild = this;
-			if (subtreeB) {
-				subtreeB->m_parent = this;
-			}
-			m_rightChild = subtreeB;
-
-			if (!parent) {
-				m_root = y;
-				return;
-			}
-			if (parent->m_leftChild == this) {
-				parent->m_leftChild = y;
-				return;
-			}
-			parent->m_rightChild = y;
-		}
-
-		void rightRotate() {
-			Node *parent = m_parent;
-			Node *y = m_leftChild;
-
-			Node *subtreeB = y->m_rightChild;
-
-			m_parent = y;
-			y->m_rightChild = this;
-			if (subtreeB) {
-				subtreeB->m_parent = this;
-			}
-			m_leftChild = subtreeB;
-
-			if (!parent) {
-				m_root = y;
-				return;
-			}
-			if (parent->m_leftChild == this) {
-				parent->m_leftChild = y;
-				return;
-			}
-			parent->m_rightChild = y;
-		}
-
-		void leftRightRotate() {
-			m_leftChild->leftRotate();
-			rightRotate();
-		}
-
-		void rightLeftRotate() {
-			m_rightChild->rightRotate();
-			leftRotate();
-		}
-
 		void swapValues(Node &other) {
 			T temp = m_value;
 			m_value = other.m_value;
@@ -178,6 +120,73 @@ struct Tree {
 
 	Node *m_root;
 	size_t m_size;
+
+	void leftRotate(Node *x) {
+		Node *parent = x->m_parent;
+		Node *y = x->m_rightChild;
+
+		Node *subtreeB = y->m_leftChild;
+
+		x->m_parent = y;
+		y->m_leftChild = x;
+		if (subtreeB) {
+			subtreeB->m_parent = x;
+		}
+		x->m_rightChild = subtreeB;
+		y->m_parent = parent;
+
+		x->calculateNewHeight();
+		y->calculateNewHeight();
+
+		if (!parent) {
+			m_root = y;
+			return;
+		}
+		if (parent->m_leftChild == x) {
+			parent->m_leftChild = y;
+			return;
+		}
+		parent->m_rightChild = y;
+	}
+
+	void rightRotate(Node *x) {
+		Node *parent = x->m_parent;
+		Node *y = x->m_leftChild;
+
+		Node *subtreeB = y->m_rightChild;
+
+		x->m_parent = y;
+		y->m_rightChild = x;
+		if (subtreeB) {
+			subtreeB->m_parent = x;
+		}
+		x->m_leftChild = subtreeB;
+		y->m_parent = parent;
+
+		x->calculateNewHeight();
+		y->calculateNewHeight();
+
+		if (!parent) {
+			m_root = y;
+			return;
+		}
+		if (parent->m_leftChild == x) {
+			parent->m_leftChild = y;
+			return;
+		}
+		parent->m_rightChild = y;
+	}
+
+	void leftRightRotate(Node *x) {
+		leftRotate(x->m_leftChild);
+		rightRotate(x);
+	}
+
+	void rightLeftRotate(Node *x) {
+		rightRotate(x->m_rightChild);
+		leftRotate(x);
+	}
+
 	size_t size() const {
 		return m_size;
 	}
