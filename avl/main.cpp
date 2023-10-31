@@ -133,7 +133,89 @@ struct Tree {
 
 		return true;
 	}
-	bool erase(const T &value);
+
+	Node *findMin(Node *n) const {
+		if (!n) {
+			return nullptr;
+		}
+		while (n->m_leftChild) {
+			n = n->m_leftChild;
+		}
+		return n;
+	}
+
+	bool erase(const T &value) {
+		Node *toDelete = findByValue(value);
+		// case 1 - this node is not in tree
+		if (!toDelete) {
+			return false;
+		}
+
+		while (toDelete) {
+			// case 2 - this node is a leaf
+			if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
+				// if parent exists, remove this node as it's child
+				if (toDelete->m_parent) {
+					if (toDelete->m_parent->m_leftChild == toDelete) {
+						toDelete->m_parent->m_leftChild = nullptr;
+					} else {
+						toDelete->m_parent->m_rightChild = nullptr;
+					}
+				}
+				// delete the node itself
+				delete toDelete;
+				toDelete = nullptr;
+				break;
+			}
+			// case 3 - this node has one child
+			// case 3.1 - the child is left
+			if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+				// set toDelete's parent as parent of toDelete's only child
+				toDelete->m_leftChild->m_parent = toDelete->m_parent;
+				// if parent exists, set it's child as this child
+				if (toDelete->m_parent) {
+					if (toDelete->m_parent->m_leftChild == toDelete) {
+						toDelete->m_parent->m_leftChild = toDelete->m_leftChild;
+					} else {
+						toDelete->m_parent->m_rightChild = toDelete->m_leftChild;
+					}
+				} else { // parent doesn't exists - toDelete is root - set this child as root
+					m_root = toDelete->m_leftChild;
+				}
+				// delete the node itself
+				delete toDelete;
+				toDelete = nullptr;
+				break;
+			}
+			// case 3.2 - the child is right
+			if (!toDelete->m_leftChild && toDelete->m_rightChild) {
+				// set toDelete's parent as parent of toDelete's only child
+				toDelete->m_rightChild->m_parent = toDelete->m_parent;
+				// if parent exists, set it's child as this child
+				if (toDelete->m_parent) {
+					if (toDelete->m_parent->m_leftChild == toDelete) {
+						toDelete->m_parent->m_leftChild = toDelete->m_rightChild;
+					} else {
+						toDelete->m_parent->m_rightChild = toDelete->m_rightChild;
+					}
+				} else { // parent doesn't exists - toDelete is root - set this child as root
+					m_root = toDelete->m_rightChild;
+				}
+				// delete the node itself
+				delete toDelete;
+				toDelete = nullptr;
+				break;
+			}
+			// case 4 - this node has two children
+			Node *min = findMin(toDelete->m_rightChild);
+			toDelete->swapValues(*min);
+			toDelete = min;
+		}
+
+		// todo: balance
+		--m_size;
+		return true;
+	}
 
 	Tree() {
 		m_root = nullptr;
