@@ -79,29 +79,35 @@ struct Tree {
 			return (*this < other) || (other < *this);
 		}
 
-		void calculateNewSign() {
-			m_sign = 0;
+		bool calculateNewSign() {
+			ssize_t newSign = 0;
 			if (m_leftChild) {
-				m_sign -= m_leftChild->m_height;
+				newSign -= m_leftChild->m_height + 1;
 			}
 			if (m_rightChild) {
-				m_sign += m_rightChild->m_height;
+				newSign += m_rightChild->m_height + 1;
 			}
+
+			if (m_sign == newSign) {
+				return false;
+			}
+			m_sign = newSign;
+			return true;
 		}
 
 		bool calculateNewHeight() {
 			size_t maxHeight = 0;
 			if (m_leftChild) {
-				maxHeight = m_leftChild->m_height;
+				maxHeight = m_leftChild->m_height + 1;
 			}
-			if (m_rightChild && maxHeight < m_rightChild->m_height) {
-				maxHeight = visiting->m_rightChild;
+			if (m_rightChild && maxHeight < m_rightChild->m_height + 1) {
+				maxHeight = m_rightChild->m_height + 1;
 			}
-			++maxHeight;
 			if (m_height == maxHeight) {
-				return false;
+				return calculateNewSign();
 			}
-			visiting->m_height = maxHeight;
+			m_height = maxHeight;
+			calculateNewSign();
 			return true;
 		}
 
