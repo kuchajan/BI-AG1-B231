@@ -285,9 +285,34 @@ struct TextEditorBackend {
 		balance(balanceFrom);
 	}
 
-	size_t line_start(size_t r) const;
-	size_t line_length(size_t r) const;
-	size_t char_to_line(size_t i) const;
+	// Returns the index of the start of the i-th line
+	size_t line_start(size_t lineIndex) const;
+	// Returns the length of the i-th line, including the newline
+	size_t line_length(size_t lineIndex) const;
+
+	// Returns the index of the line that contains the i-th character
+	size_t char_to_line(size_t index) const {
+		// same as find, but more complicated
+		if (index >= size()) {
+			throw std::out_of_range("Index does not exist");
+		}
+		size_t lineCount = 0;
+		Node *visiting = m_root;
+
+		while (visiting) {
+			if (index == getSize(visiting->m_leftChild)) {
+				return lineCount + getLineCount(visiting->m_leftChild); //
+			}
+			if (index < getSize(visiting->m_leftChild)) {
+				visiting = visiting->m_leftChild;
+			} else {
+				index -= getSize(visiting->m_leftChild) + 1;
+				lineCount += getLineCount(visiting->m_leftChild) + (visiting->m_value == '\n' ? 1 : 0);
+				visiting = visiting->m_rightChild;
+			}
+		}
+		throw std::logic_error("Loop exited without finding the index");
+	}
 };
 
 #ifndef __PROGTEST__
