@@ -44,7 +44,6 @@ namespace config {
 	inline constexpr bool PARENT_POINTERS = true;
 }
 
-// TODO implement
 template <typename T>
 struct Tree {
 	struct Node {
@@ -257,6 +256,23 @@ struct Tree {
 		return n;
 	}
 
+	void eraseSubMethod(Node *toDelete, Node *subChild) {
+		// set toDelete's parent as parent of toDelete's only child (if it exists)
+		if (subChild) {
+			subChild->m_parent = toDelete->m_parent;
+		}
+		// if parent exists, set it's child as this child
+		if (toDelete->m_parent) {
+			if (toDelete->m_parent->m_leftChild == toDelete) {
+				toDelete->m_parent->m_leftChild = subChild;
+			} else {
+				toDelete->m_parent->m_rightChild = subChild;
+			}
+		} else { // parent doesn't exist - toDelete is root - set this child as root
+			m_root = subChild;
+		}
+	}
+
 	bool erase(const T &value) {
 		Node *toDelete = findByValue(value);
 		// case 1 - this node is not in tree
@@ -264,56 +280,24 @@ struct Tree {
 			return false;
 		}
 
-		while (true) {
-			// case 2 - this node is a leaf
-			if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
-				// if parent exists, remove this node as it's child
-				if (toDelete->m_parent) {
-					if (toDelete->m_parent->m_leftChild == toDelete) {
-						toDelete->m_parent->m_leftChild = nullptr;
-					} else {
-						toDelete->m_parent->m_rightChild = nullptr;
-					}
-				}
-				break;
-			}
-			// case 3 - this node has one child
-			// case 3.1 - the child is left
-			if (toDelete->m_leftChild && !toDelete->m_rightChild) {
-				// set toDelete's parent as parent of toDelete's only child
-				toDelete->m_leftChild->m_parent = toDelete->m_parent;
-				// if parent exists, set it's child as this child
-				if (toDelete->m_parent) {
-					if (toDelete->m_parent->m_leftChild == toDelete) {
-						toDelete->m_parent->m_leftChild = toDelete->m_leftChild;
-					} else {
-						toDelete->m_parent->m_rightChild = toDelete->m_leftChild;
-					}
-				} else { // parent doesn't exists - toDelete is root - set this child as root
-					m_root = toDelete->m_leftChild;
-				}
-				break;
-			}
-			// case 3.2 - the child is right
-			if (!toDelete->m_leftChild && toDelete->m_rightChild) {
-				// set toDelete's parent as parent of toDelete's only child
-				toDelete->m_rightChild->m_parent = toDelete->m_parent;
-				// if parent exists, set it's child as this child
-				if (toDelete->m_parent) {
-					if (toDelete->m_parent->m_leftChild == toDelete) {
-						toDelete->m_parent->m_leftChild = toDelete->m_rightChild;
-					} else {
-						toDelete->m_parent->m_rightChild = toDelete->m_rightChild;
-					}
-				} else { // parent doesn't exists - toDelete is root - set this child as root
-					m_root = toDelete->m_rightChild;
-				}
-				break;
-			}
+		if (toDelete->m_leftChild && toDelete->m_rightChild) {
 			// case 4 - this node has two children
 			Node *min = findMin(toDelete->m_rightChild);
 			toDelete->swapValues(*min);
 			toDelete = min;
+		}
+		// case 2 - this node is a leaf
+		if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, nullptr);
+		}
+		// case 3 - this node has one child
+		// case 3.1 - the child is left
+		if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, toDelete->m_leftChild);
+		}
+		// case 3.2 - the child is right
+		if (!toDelete->m_leftChild && toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, toDelete->m_rightChild);
 		}
 
 		Node *balanceFrom = toDelete->m_parent;
@@ -524,6 +508,14 @@ void test_erase() {
 		t.find(i);
 }
 
+void test_myTest() {
+	Tester<int> t;
+	t.insert(1, true);
+	t.erase(1, true);
+	t.insert(10, true);
+	t.erase(10, true);
+}
+
 enum RandomTestFlags : unsigned {
 	SEQ = 1,
 	NO_ERASE = 2,
@@ -569,6 +561,9 @@ int main() {
 
 		std::cout << "Erase test..." << std::endl;
 		test_erase();
+
+		std::cout << "My test" << std::endl;
+		test_myTest();
 
 		std::cout << "Tiny random test..." << std::endl;
 		test_random(20, CHECK_TREE);
