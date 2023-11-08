@@ -92,7 +92,48 @@ struct TextEditorBackend {
 		return getLineCount(m_root);
 	}
 
-	char at(size_t i) const;
+	Node *findMin(Node *n) const {
+		while (n && n->m_leftChild) {
+			n = n->m_leftChild;
+		}
+		return n;
+	}
+
+	Node *findMax(Node *n) const {
+		while (n && n->m_rightChild) {
+			n = n->m_rightChild;
+		}
+		return n;
+	}
+
+	Node *find(size_t index) const {
+		if (index >= size()) {
+			throw std::out_of_range("Index does not exist");
+		}
+		Node *visiting = m_root;
+		while (visiting) {
+			if (index == 0) {
+				return findMin(visiting);
+			}
+			if ((index + 1) >= visiting->m_size) {
+				return findMax(visiting);
+			}
+			if (index == getSize(visiting->m_leftChild)) {
+				return visiting;
+			}
+			if (index < getSize(visiting->m_leftChild)) {
+				visiting = visiting->m_leftChild;
+			} else {
+				index -= getSize(visiting->m_leftChild) + 1;
+				visiting = visiting->m_rightChild;
+			}
+		}
+		throw std::logic_error("Loop exited without finding the index");
+	}
+
+	char at(size_t i) const {
+		return find(i)->m_value;
+	}
 	void edit(size_t i, char c);
 	void insert(size_t i, char c);
 	void erase(size_t i);
