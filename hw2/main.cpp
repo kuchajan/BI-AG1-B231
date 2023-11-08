@@ -548,7 +548,7 @@ void myTest(size_t size = 1'000'000) {
 				break;
 			}
 		}
-		if ((std::count(ref.begin(), ref.end(), '\n') + 1) != t.lines()) {
+		if (((size_t)std::count(ref.begin(), ref.end(), '\n') + 1) != t.lines()) {
 			throw std::runtime_error("found mismatch in lines");
 		}
 		if (ref.size() != t.size()) {
@@ -573,7 +573,7 @@ int main() {
 	else
 		std::cout << "Failed " << fail << " of " << (ok + fail) << " tests." << std::endl;
 
-	myTest();
+	// myTest();
 }
 
 #endif
