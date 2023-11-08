@@ -225,6 +225,44 @@ struct Array {
 		recursiveDestruct(m_root);
 	}
 
+	struct Iterator {
+		Node *m_current;
+		Iterator() : m_current(findMin(m_root)) {}
+		Iterator(Node *current) : m_current(current) {}
+		Iterator(size_t index) {
+			m_current = find(index);
+		}
+		void next() {
+			if (!m_current)
+				return;
+			if (m_current->m_rightChild) {
+				////m_current = findMin(m_current->m_rightChild); // WHY ISN'T THIS WORKING????????
+				m_current = m_current->m_rightChild;
+				while (m_current && m_current->m_leftChild) {
+					m_current = m_current->m_leftChild;
+				}
+			} else {
+				Node *previous;
+				do {
+					previous = m_current;
+					m_current = m_current->m_parent;
+				} while (m_current && m_current->m_rightChild == previous);
+			}
+		}
+		bool end() const {
+			return m_current == nullptr;
+		}
+	};
+
+	// exclusive from (so from pointer+1)
+	void changeIndexes(Node *from, int byValue) {
+		Iterator iter(from);
+		iter.next();
+		for (; !iter.end(); iter.next()) {
+			iter.m_current->m_index += byValue;
+		}
+	}
+
 	bool empty() const {
 		return m_root == nullptr;
 	}
