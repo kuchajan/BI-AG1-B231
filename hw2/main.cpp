@@ -313,8 +313,11 @@ struct TextEditorBackend {
 		return index;
 	}
 	// Returns the length of the i-th line, including the newline
-	size_t line_length(size_t lineIndex) const;
-
+	size_t line_length(size_t lineIndex) const {
+		if (lineIndex >= lines())
+			throw std::out_of_range("Line index is outside [0, lines())");
+		return (lineIndex + 1 >= lines() ? size() : line_start(lineIndex + 1)) - line_start(lineIndex);
+	}
 	// Returns the index of the line that contains the i-th character
 	size_t char_to_line(size_t index) const {
 		// same as find, but more complicated
