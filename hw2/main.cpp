@@ -89,7 +89,7 @@ struct TextEditorBackend {
 		return getSize(m_root);
 	}
 	size_t lines() const {
-		return getLineCount(m_root);
+		return getLineCount(m_root) + 1;
 	}
 
 	Node *findMin(Node *n) const {
