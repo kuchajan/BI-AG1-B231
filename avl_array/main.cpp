@@ -129,8 +129,12 @@ struct Array {
 		recursiveDestruct(m_root);
 	}
 
-	bool empty() const;
-	size_t size() const;
+	bool empty() const {
+		return m_root == nullptr;
+	}
+	size_t size() const {
+		return m_size;
+	}
 
 	const T &operator[](size_t index) const;
 	T &operator[](size_t index);
