@@ -59,16 +59,17 @@ struct Array {
 		Node *m_rightChild;
 		// avl variables
 		size_t m_height;
+		size_t m_size;
 		// * node value variables
 		T m_value;
-		size_t m_index;
 
-		Node(T value, size_t index) : m_value(value), m_index(index) {
+		Node(T value) : m_value(value) {
 			// sanity check
 			m_parent = nullptr;
 			m_leftChild = nullptr;
 			m_rightChild = nullptr;
 			m_height = 0;
+			m_size = 1;
 		}
 
 		ssize_t getSign() const {
@@ -77,37 +78,20 @@ struct Array {
 
 		void calculateNewHeight() {
 			m_height = 0;
+			m_size = 1;
 			// it is expected that children's height is already calculated
 			if (m_leftChild) {
 				m_height = m_leftChild->m_height + 1;
+				m_size += m_leftChild->m_size;
 			}
-			if (m_rightChild && m_height < m_rightChild->m_height + 1) {
-				m_height = m_rightChild->m_height + 1;
+			if (m_rightChild) {
+				m_height = m_height < m_rightChild->m_height + 1 ? m_rightChild->m_height + 1 : m_height;
+				m_size += m_rightChild->m_size;
 			}
 		}
 
 		void swapNodes(Node &other) {
 			std::swap(m_value, other.m_value);
-			std::swap(m_index, other.m_index);
-		}
-
-		bool operator<(const Node &other) const {
-			return m_index < other.m_index;
-		}
-		bool operator>(const Node &other) const {
-			return m_index > other.m_index;
-		}
-		bool operator<=(const Node &other) const {
-			return m_index <= other.m_index;
-		}
-		bool operator>=(const Node &other) const {
-			return m_index >= other.m_index;
-		}
-		bool operator==(const Node &other) const {
-			return m_index == other.m_index;
-		}
-		bool operator!=(const Node &other) const {
-			return m_index != other.m_index;
 		}
 	};
 
@@ -186,18 +170,8 @@ struct Array {
 		}
 	}
 
-	Node *find(size_t index) const {
-		if (index >= size()) {
-			throw std::out_of_range("Index is outside of tree size");
-		}
-		Node *visiting = m_root;
-		while (visiting && visiting->m_index != index) {
-			visiting = visiting->m_index > index ? visiting->m_leftChild : visiting->m_rightChild;
-		}
-		if (visiting == nullptr) {
-			throw std::logic_error("Index does not exist");
-		}
-		return visiting;
+	size_t getSize(Node *n) const {
+		return n ? n->m_size : 0;
 	}
 
 	Node *findMin(Node *n) const {
@@ -207,12 +181,39 @@ struct Array {
 		return n;
 	}
 
+	Node *findMax(Node *n) const {
+		while (n && n->m_rightChild) {
+			n = n->m_rightChild;
+		}
+		return n;
+	}
+
+	Node *find(size_t index) const {
+		Node *visiting = m_root;
+		while (visiting) {
+			if (index == 0) {
+				return findMin(visiting);
+			}
+			if ((index + 1) >= visiting->m_size) {
+				return findMax(visiting);
+			}
+			if (index == getSize(visiting->m_leftChild)) {
+				return visiting;
+			}
+			if (index < getSize(visiting->m_leftChild)) {
+				visiting = visiting->m_leftChild;
+			} else {
+				index -= getSize(visiting->m_leftChild) + 1;
+				visiting = visiting->m_rightChild;
+			}
+		}
+		throw std::logic_error("Loop exited without finding the index");
+	}
+
 	Node *m_root;
-	size_t m_size;
 
 	Array() {
 		m_root = nullptr;
-		m_size = 0;
 	}
 	void recursiveDestruct(Node *toDelete) {
 		if (toDelete) {
@@ -225,49 +226,11 @@ struct Array {
 		recursiveDestruct(m_root);
 	}
 
-	struct Iterator {
-		Node *m_current;
-		Iterator() : m_current(findMin(m_root)) {}
-		Iterator(Node *current) : m_current(current) {}
-		Iterator(size_t index) {
-			m_current = find(index);
-		}
-		void next() {
-			if (!m_current)
-				return;
-			if (m_current->m_rightChild) {
-				////m_current = findMin(m_current->m_rightChild); // WHY ISN'T THIS WORKING????????
-				m_current = m_current->m_rightChild;
-				while (m_current && m_current->m_leftChild) {
-					m_current = m_current->m_leftChild;
-				}
-			} else {
-				Node *previous;
-				do {
-					previous = m_current;
-					m_current = m_current->m_parent;
-				} while (m_current && m_current->m_rightChild == previous);
-			}
-		}
-		bool end() const {
-			return m_current == nullptr;
-		}
-	};
-
-	// exclusive from (so from pointer+1)
-	void changeIndexes(Node *from, int byValue) {
-		Iterator iter(from);
-		iter.next();
-		for (; !iter.end(); iter.next()) {
-			iter.m_current->m_index += byValue;
-		}
-	}
-
 	bool empty() const {
 		return m_root == nullptr;
 	}
 	size_t size() const {
-		return m_size;
+		return getSize(m_root);
 	}
 
 	const T &operator[](size_t index) const {
@@ -279,10 +242,7 @@ struct Array {
 
 	void insert(size_t index, T value) {
 		// setup insertion and sub-methods
-		bool indexExists = index < size();
-		index = indexExists ? index : size();
-		++m_size;
-		Node *toInsert = new Node(value, index);
+		Node *toInsert = new Node(value);
 		if (empty()) {
 			m_root = toInsert;
 			return;
@@ -292,7 +252,8 @@ struct Array {
 		// insertion recursive loop
 		while (visiting) {
 			toInsert->m_parent = visiting;
-			isLeft = *toInsert <= *visiting;
+			isLeft = index <= getSize(visiting->m_leftChild);
+			index = isLeft ? index : index - (getSize(visiting->m_leftChild) + 1);
 			visiting = isLeft ? visiting->m_leftChild : visiting->m_rightChild;
 		}
 		if (isLeft) {
@@ -300,10 +261,7 @@ struct Array {
 		} else {
 			toInsert->m_parent->m_rightChild = toInsert;
 		}
-		// change the indexes of next
-		if (indexExists) {
-			changeIndexes(toInsert, 1);
-		}
+
 		balance(toInsert->m_parent);
 	}
 
@@ -327,10 +285,7 @@ struct Array {
 	T erase(size_t index) {
 		// find the node
 		Node *toDelete = find(index);
-		// case 1 - this node is not in tree = find throws exception
-
-		// change the indexes of subsequent nodes
-		changeIndexes(toDelete, -1);
+		// case 1 - this node is not in tree - doesn't happen
 
 		if (toDelete->m_leftChild && toDelete->m_rightChild) {
 			// case 4 - this node has two children
@@ -338,17 +293,16 @@ struct Array {
 			toDelete->swapNodes(*min);
 			toDelete = min;
 		}
-		// case 2 - this node is a leaf
+
 		if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
+			// case 2 - this node is a leaf
 			eraseSubMethod(toDelete, nullptr);
-		}
-		// case 3 - this node has one child
-		// case 3.1 - the child is left
-		if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+		} else if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+			// case 3 - this node has one child
+			// case 3.1 - the child is left
 			eraseSubMethod(toDelete, toDelete->m_leftChild);
-		}
-		// case 3.2 - the child is right
-		if (!toDelete->m_leftChild && toDelete->m_rightChild) {
+		} else {
+			// case 3.2 - the child is right
 			eraseSubMethod(toDelete, toDelete->m_rightChild);
 		}
 
@@ -356,7 +310,6 @@ struct Array {
 		T value = toDelete->m_value;
 		delete toDelete;
 		balance(balanceFrom);
-		--m_size;
 		return value;
 	}
 
