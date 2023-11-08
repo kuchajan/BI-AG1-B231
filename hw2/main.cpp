@@ -286,7 +286,32 @@ struct TextEditorBackend {
 	}
 
 	// Returns the index of the start of the i-th line
-	size_t line_start(size_t lineIndex) const;
+	size_t line_start(size_t lineIndex) const {
+		if (lineIndex >= lines())
+			throw std::out_of_range("Line index is outside [0, lines())");
+		// same as find, but with lines instead of size
+		Node *visiting = m_root;
+		size_t index = getSize(visiting->m_leftChild);
+		while (visiting) {
+			if (lineIndex == 0) {
+				while (visiting->m_leftChild) {
+					visiting = visiting->m_leftChild;
+					index -= getSize(visiting ? visiting->m_rightChild : nullptr) + 1;
+				}
+				break;
+			}
+			if (lineIndex <= getLineCount(visiting->m_leftChild)) { // line is to the left
+				// line index is unchanged
+				visiting = visiting->m_leftChild;
+				index -= getSize(visiting ? visiting->m_rightChild : nullptr) + 1;
+			} else { // the line is to the right
+				lineIndex -= getLineCount(visiting->m_leftChild) + (visiting->m_value == '\n' ? 1 : 0);
+				visiting = visiting->m_rightChild;
+				index += getSize(visiting ? visiting->m_leftChild : nullptr) + 1;
+			}
+		}
+		return index;
+	}
 	// Returns the length of the i-th line, including the newline
 	size_t line_length(size_t lineIndex) const;
 
