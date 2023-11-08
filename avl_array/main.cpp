@@ -277,7 +277,36 @@ struct Array {
 		return (find(index)->m_value);
 	}
 
-	void insert(size_t index, T value);
+	void insert(size_t index, T value) {
+		// setup insertion and sub-methods
+		bool indexExists = index < size();
+		index = indexExists ? index : size();
+		++m_size;
+		Node *toInsert = new Node(value, index);
+		if (empty()) {
+			m_root = toInsert;
+			return;
+		}
+		Node *visiting = m_root;
+		bool isLeft = true;
+		// insertion recursive loop
+		while (visiting) {
+			toInsert->m_parent = visiting;
+			isLeft = *toInsert <= *visiting;
+			visiting = isLeft ? visiting->m_leftChild : visiting->m_rightChild;
+		}
+		if (isLeft) {
+			toInsert->m_parent->m_leftChild = toInsert;
+		} else {
+			toInsert->m_parent->m_rightChild = toInsert;
+		}
+		// change the indexes of next
+		if (indexExists) {
+			changeIndexes(toInsert, 1);
+		}
+		balance(toInsert->m_parent);
+	}
+
 	T erase(size_t index);
 
 	// Needed to test the structure of the tree.
