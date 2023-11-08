@@ -307,7 +307,58 @@ struct Array {
 		balance(toInsert->m_parent);
 	}
 
-	T erase(size_t index);
+	void eraseSubMethod(Node *toDelete, Node *subChild) {
+		// set toDelete's parent as parent of toDelete's only child (if it exists)
+		if (subChild) {
+			subChild->m_parent = toDelete->m_parent;
+		}
+		// if parent exists, set it's child as this child
+		if (toDelete->m_parent) {
+			if (toDelete->m_parent->m_leftChild == toDelete) {
+				toDelete->m_parent->m_leftChild = subChild;
+			} else {
+				toDelete->m_parent->m_rightChild = subChild;
+			}
+		} else { // parent doesn't exist - toDelete is root - set this child as root
+			m_root = subChild;
+		}
+	}
+
+	T erase(size_t index) {
+		// find the node
+		Node *toDelete = find(index);
+		// case 1 - this node is not in tree = find throws exception
+
+		// change the indexes of subsequent nodes
+		changeIndexes(toDelete, -1);
+
+		if (toDelete->m_leftChild && toDelete->m_rightChild) {
+			// case 4 - this node has two children
+			Node *min = findMin(toDelete->m_rightChild);
+			toDelete->swapNodes(*min);
+			toDelete = min;
+		}
+		// case 2 - this node is a leaf
+		if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, nullptr);
+		}
+		// case 3 - this node has one child
+		// case 3.1 - the child is left
+		if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, toDelete->m_leftChild);
+		}
+		// case 3.2 - the child is right
+		if (!toDelete->m_leftChild && toDelete->m_rightChild) {
+			eraseSubMethod(toDelete, toDelete->m_rightChild);
+		}
+
+		Node *balanceFrom = toDelete->m_parent;
+		T value = toDelete->m_value;
+		delete toDelete;
+		balance(balanceFrom);
+		--m_size;
+		return value;
+	}
 
 	// Needed to test the structure of the tree.
 	// Replace Node with the real type of your nodes
