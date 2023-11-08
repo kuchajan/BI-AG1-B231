@@ -22,7 +22,62 @@
 #endif
 
 struct TextEditorBackend {
-	TextEditorBackend(const std::string &text);
+	struct Node {
+		// * tree structure variables
+		// neighbours
+		Node *m_parent;
+		Node *m_leftChild;
+		Node *m_rightChild;
+		// avl variables
+		size_t m_height;
+		size_t m_size;
+		size_t m_lineCount;
+		// * node value variables
+		char m_value;
+
+		Node(char value) : m_value(value) {
+			// sanity check
+			m_parent = nullptr;
+			m_leftChild = nullptr;
+			m_rightChild = nullptr;
+			m_height = 0;
+			m_size = 1;
+			m_lineCount = m_value == '\n' ? 1 : 0;
+		}
+
+		ssize_t getSign() const {
+			return (m_rightChild != nullptr ? (ssize_t)(m_rightChild->m_height + 1) : (ssize_t)0) - (m_leftChild != nullptr ? (ssize_t)(m_leftChild->m_height + 1) : (ssize_t)0);
+		}
+
+		void calculateNewHeight() {
+			m_height = 0;
+			m_size = 1;
+			m_lineCount = m_value == '\n' ? 1 : 0;
+			// it is expected that children's height is already calculated
+			if (m_leftChild) {
+				m_height = m_leftChild->m_height + 1;
+				m_size += m_leftChild->m_size;
+				m_lineCount += m_leftChild->m_lineCount;
+			}
+			if (m_rightChild) {
+				m_height = m_height < m_rightChild->m_height + 1 ? m_rightChild->m_height + 1 : m_height;
+				m_size += m_rightChild->m_size;
+				m_lineCount += m_rightChild->m_lineCount;
+			}
+		}
+
+		void swapNodes(Node &other) {
+			std::swap(m_value, other.m_value);
+		}
+	};
+	Node *m_root;
+
+	TextEditorBackend(const std::string &text) {
+		// naive implementation
+		m_root = nullptr;
+		for (char ch : text)
+			insert(size(), ch);
+	}
 
 	size_t size() const;
 	size_t lines() const;
