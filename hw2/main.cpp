@@ -136,7 +136,7 @@ struct TextEditorBackend {
 	}
 	void edit(size_t i, char c) {
 		Node *toEdit = find(i);
-		bool newLineEdit = toEdit->m_value == '\n' || c == '\n';
+		bool newLineEdit = (toEdit->m_value == '\n' || c == '\n') && toEdit->m_value != c;
 		toEdit->m_value = c;
 		if (newLineEdit) {
 			Node *visiting = toEdit;
