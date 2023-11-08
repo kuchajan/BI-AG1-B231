@@ -135,7 +135,16 @@ struct TextEditorBackend {
 		return find(i)->m_value;
 	}
 	void edit(size_t i, char c) {
-		find(i)->m_value = c;
+		Node *toEdit = find(i);
+		bool newLineEdit = toEdit->m_value == '\n' || c == '\n';
+		toEdit->m_value = c;
+		if (newLineEdit) {
+			Node *visiting = toEdit;
+			while (visiting) {
+				visiting->m_lineCount += c == '\n' ? 1 : -1;
+				visiting = visiting->m_parent;
+			}
+		}
 	}
 
 	void leftRotate(Node *x) {
