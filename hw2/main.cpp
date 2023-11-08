@@ -137,6 +137,82 @@ struct TextEditorBackend {
 	void edit(size_t i, char c) {
 		find(i)->m_value = c;
 	}
+
+	void leftRotate(Node *x) {
+		Node *parent = x->m_parent;
+		Node *y = x->m_rightChild;
+
+		Node *subtreeB = y->m_leftChild;
+
+		x->m_parent = y;
+		y->m_leftChild = x;
+		if (subtreeB) {
+			subtreeB->m_parent = x;
+		}
+		x->m_rightChild = subtreeB;
+		y->m_parent = parent;
+
+		x->calculateNewHeight();
+		y->calculateNewHeight();
+
+		if (!parent) {
+			m_root = y;
+			return;
+		}
+		if (parent->m_leftChild == x) {
+			parent->m_leftChild = y;
+			return;
+		}
+		parent->m_rightChild = y;
+	}
+
+	void rightRotate(Node *x) {
+		Node *parent = x->m_parent;
+		Node *y = x->m_leftChild;
+
+		Node *subtreeB = y->m_rightChild;
+
+		x->m_parent = y;
+		y->m_rightChild = x;
+		if (subtreeB) {
+			subtreeB->m_parent = x;
+		}
+		x->m_leftChild = subtreeB;
+		y->m_parent = parent;
+
+		x->calculateNewHeight();
+		y->calculateNewHeight();
+
+		if (!parent) {
+			m_root = y;
+			return;
+		}
+		if (parent->m_leftChild == x) {
+			parent->m_leftChild = y;
+			return;
+		}
+		parent->m_rightChild = y;
+	}
+
+	void balance(Node *visiting) {
+		while (visiting) {
+			// calculate new height
+			visiting->calculateNewHeight();
+			if (visiting->getSign() < -1) {
+				if (visiting->m_leftChild && visiting->m_leftChild->getSign() == 1) {
+					leftRotate(visiting->m_leftChild);
+				}
+				rightRotate(visiting);
+			} else if (visiting->getSign() > 1) {
+				if (visiting->m_rightChild && visiting->m_rightChild->getSign() == -1) {
+					rightRotate(visiting->m_rightChild);
+				}
+				leftRotate(visiting);
+			}
+			visiting = visiting->m_parent;
+		}
+	}
+
 	void insert(size_t i, char c);
 	void erase(size_t i);
 
