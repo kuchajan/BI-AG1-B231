@@ -49,9 +49,86 @@ namespace config {
 	inline constexpr bool CHECK_DEPTH = true;
 }
 
-// TODO implement
 template <typename T>
 struct Array {
+	struct Node {
+		// * tree structure variables
+		// neighbours
+		Node *m_parent;
+		Node *m_leftChild;
+		Node *m_rightChild;
+		// avl variables
+		size_t m_height;
+		// * node value variables
+		T m_value;
+		size_t m_index;
+
+		Node(T value, size_t index) : m_value(value), m_index(index) {
+			// sanity check
+			m_parent = nullptr;
+			m_leftChild = nullptr;
+			m_rightChild = nullptr;
+			m_height = 0;
+		}
+
+		ssize_t getSign() const {
+			return (m_rightChild != nullptr ? (ssize_t)(m_rightChild->m_height + 1) : (ssize_t)0) - (m_leftChild != nullptr ? (ssize_t)(m_leftChild->m_height + 1) : (ssize_t)0);
+		}
+
+		void calculateNewHeight() {
+			m_height = 0;
+			// it is expected that children's height is already calculated
+			if (m_leftChild) {
+				m_height = m_leftChild->m_height + 1;
+			}
+			if (m_rightChild && m_height < m_rightChild->m_height + 1) {
+				m_height = m_rightChild->m_height + 1;
+			}
+		}
+
+		void swapNodes(Node &other) {
+			std::swap(m_value, other.m_value);
+			std::swap(m_index, other.m_index);
+		}
+
+		bool operator<(const Node &other) const {
+			return m_index < other.m_index;
+		}
+		bool operator>(const Node &other) const {
+			return m_index > other.m_index;
+		}
+		bool operator<=(const Node &other) const {
+			return m_index <= other.m_index;
+		}
+		bool operator>=(const Node &other) const {
+			return m_index >= other.m_index;
+		}
+		bool operator==(const Node &other) const {
+			return m_index == other.m_index;
+		}
+		bool operator!=(const Node &other) const {
+			return m_index != other.m_index;
+		}
+	};
+
+	Node *m_root;
+	size_t m_size;
+
+	Array() {
+		m_root = nullptr;
+		m_size = 0;
+	}
+	void recursiveDestruct(Node *toDelete) {
+		if (toDelete) {
+			recursiveDestruct(toDelete->m_leftChild);
+			recursiveDestruct(toDelete->m_rightChild);
+			delete toDelete;
+		}
+	}
+	~Array() {
+		recursiveDestruct(m_root);
+	}
+
 	bool empty() const;
 	size_t size() const;
 
