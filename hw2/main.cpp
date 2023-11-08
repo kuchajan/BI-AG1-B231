@@ -500,6 +500,53 @@ void test_ex(int &ok, int &fail) {
 	CHECK_EX(t.char_to_line(25), std::out_of_range);
 }
 
+char randChar(std::mt19937 &rand) {
+	const char chars[11] = "123456789\n";
+	return chars[rand() % 10];
+}
+
+void myTest(size_t size = 1'000'000) {
+	std::mt19937 my_rand(24707 + size);
+	std::string ref;
+	TextEditorBackend t(ref);
+	for (size_t i = 0; i < size; ++i) {
+		switch (my_rand() % 5) {
+			case 0: {
+				// erase
+				if (!ref.empty()) {
+					size_t where = my_rand() % (ref.length());
+					ref.erase(where, 1);
+					t.erase(where);
+				}
+				break;
+			}
+			case 1: {
+				// edit
+				if (!ref.empty()) {
+					size_t where = my_rand() % (ref.length());
+					char what = randChar(my_rand);
+					ref[where] = what;
+					t.edit(where, what);
+				}
+				break;
+			}
+			default: {
+				size_t where = my_rand() % (ref.length() + 1);
+				char what = randChar(my_rand);
+				ref.insert(ref.begin() + where, what);
+				t.insert(where, what);
+				break;
+			}
+		}
+		if ((std::count(ref.begin(), ref.end(), '\n') + 1) != t.lines()) {
+			throw std::runtime_error("found mismatch in lines");
+		}
+		if (ref.size() != t.size()) {
+			throw std::runtime_error("found mismatch in size");
+		}
+	}
+}
+
 int main() {
 	int ok = 0, fail = 0;
 	if (!fail)
@@ -515,6 +562,8 @@ int main() {
 		std::cout << "Passed all " << ok << " tests!" << std::endl;
 	else
 		std::cout << "Failed " << fail << " of " << (ok + fail) << " tests." << std::endl;
+
+	myTest();
 }
 
 #endif
