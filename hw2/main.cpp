@@ -134,7 +134,9 @@ struct TextEditorBackend {
 	char at(size_t i) const {
 		return find(i)->m_value;
 	}
-	void edit(size_t i, char c);
+	void edit(size_t i, char c) {
+		find(i)->m_value = c;
+	}
 	void insert(size_t i, char c);
 	void erase(size_t i);
 
