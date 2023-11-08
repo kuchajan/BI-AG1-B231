@@ -200,6 +200,13 @@ struct Array {
 		return visiting;
 	}
 
+	Node *findMin(Node *n) const {
+		while (n && n->m_leftChild) {
+			n = n->m_leftChild;
+		}
+		return n;
+	}
+
 	Node *m_root;
 	size_t m_size;
 
