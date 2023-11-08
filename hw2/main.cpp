@@ -239,7 +239,51 @@ struct TextEditorBackend {
 
 		balance(toInsert->m_parent);
 	}
-	void erase(size_t i);
+
+	void eraseSubMethod(Node *toDelete, Node *subChild) {
+		// set toDelete's parent as parent of toDelete's only child (if it exists)
+		if (subChild) {
+			subChild->m_parent = toDelete->m_parent;
+		}
+		// if parent exists, set it's child as this child
+		if (toDelete->m_parent) {
+			if (toDelete->m_parent->m_leftChild == toDelete) {
+				toDelete->m_parent->m_leftChild = subChild;
+			} else {
+				toDelete->m_parent->m_rightChild = subChild;
+			}
+		} else { // parent doesn't exist - toDelete is root - set this child as root
+			m_root = subChild;
+		}
+	}
+	void erase(size_t index) {
+		// find the node
+		Node *toDelete = find(index);
+		// case 1 - this node is not in tree - doesn't happen
+
+		if (toDelete->m_leftChild && toDelete->m_rightChild) {
+			// case 4 - this node has two children
+			Node *min = findMin(toDelete->m_rightChild);
+			toDelete->swapNodes(*min);
+			toDelete = min;
+		}
+
+		if (!toDelete->m_leftChild && !toDelete->m_rightChild) {
+			// case 2 - this node is a leaf
+			eraseSubMethod(toDelete, nullptr);
+		} else if (toDelete->m_leftChild && !toDelete->m_rightChild) {
+			// case 3 - this node has one child
+			// case 3.1 - the child is left
+			eraseSubMethod(toDelete, toDelete->m_leftChild);
+		} else {
+			// case 3.2 - the child is right
+			eraseSubMethod(toDelete, toDelete->m_rightChild);
+		}
+
+		Node *balanceFrom = toDelete->m_parent;
+		delete toDelete;
+		balance(balanceFrom);
+	}
 
 	size_t line_start(size_t r) const;
 	size_t line_length(size_t r) const;
