@@ -213,7 +213,32 @@ struct TextEditorBackend {
 		}
 	}
 
-	void insert(size_t i, char c);
+	void insert(size_t index, char value) {
+		// setup insertion and sub-methods
+		if (index > size())
+			throw std::out_of_range("Index is not inside [0, size()]");
+		Node *toInsert = new Node(value);
+		if (!m_root) {
+			m_root = toInsert;
+			return;
+		}
+		Node *visiting = m_root;
+		bool isLeft = true;
+		// insertion recursive loop
+		while (visiting) {
+			toInsert->m_parent = visiting;
+			isLeft = index <= getSize(visiting->m_leftChild);
+			index = isLeft ? index : index - (getSize(visiting->m_leftChild) + 1);
+			visiting = isLeft ? visiting->m_leftChild : visiting->m_rightChild;
+		}
+		if (isLeft) {
+			toInsert->m_parent->m_leftChild = toInsert;
+		} else {
+			toInsert->m_parent->m_rightChild = toInsert;
+		}
+
+		balance(toInsert->m_parent);
+	}
 	void erase(size_t i);
 
 	size_t line_start(size_t r) const;
