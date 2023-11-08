@@ -111,6 +111,20 @@ struct Array {
 		}
 	};
 
+	Node *find(size_t index) const {
+		if (index >= size()) {
+			throw std::out_of_range("Index is outside of tree size");
+		}
+		Node *visiting = m_root;
+		while (visiting && visiting->m_index != index) {
+			visiting = visiting->m_index > index ? visiting->m_leftChild : visiting->m_rightChild;
+		}
+		if (visiting == nullptr) {
+			throw std::logic_error("Index does not exist");
+		}
+		return visiting;
+	}
+
 	Node *m_root;
 	size_t m_size;
 
@@ -136,8 +150,12 @@ struct Array {
 		return m_size;
 	}
 
-	const T &operator[](size_t index) const;
-	T &operator[](size_t index);
+	const T &operator[](size_t index) const {
+		return (find(index)->m_value);
+	}
+	T &operator[](size_t index) {
+		return (find(index)->m_value);
+	}
 
 	void insert(size_t index, T value);
 	T erase(size_t index);
