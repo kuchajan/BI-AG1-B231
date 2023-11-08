@@ -165,13 +165,12 @@ struct Array {
 	// and implementations with the ones matching
 	// your attributes.
 	struct TesterInterface {
-		// using Node = ...
-		static const Node *root(const Array *t) { return t->root; }
+		static const Node *root(const Array *t) { return t->m_root; }
 		// Parent of root must be nullptr, ignore if config::PARENT_POINTERS == false
-		static const Node *parent(const Node *n) { return n->parent; }
-		static const Node *right(const Node *n) { return n->right; }
-		static const Node *left(const Node *n) { return n->left; }
-		static const T &value(const Node *n) { return n->value; }
+		static const Node *parent(const Node *n) { return n->m_parent; }
+		static const Node *right(const Node *n) { return n->m_rightChild; }
+		static const Node *left(const Node *n) { return n->m_leftChild; }
+		static const T &value(const Node *n) { return n->m_value; }
 	};
 };
 
