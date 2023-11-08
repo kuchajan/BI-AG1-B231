@@ -79,8 +79,18 @@ struct TextEditorBackend {
 			insert(size(), ch);
 	}
 
-	size_t size() const;
-	size_t lines() const;
+	size_t getSize(Node *n) const {
+		return n ? n->m_size : 0;
+	}
+	size_t getLineCount(Node *n) const {
+		return n ? n->m_lineCount : 0;
+	}
+	size_t size() const {
+		return getSize(m_root);
+	}
+	size_t lines() const {
+		return getLineCount(m_root);
+	}
 
 	char at(size_t i) const;
 	void edit(size_t i, char c);
