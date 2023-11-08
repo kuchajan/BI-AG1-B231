@@ -78,6 +78,16 @@ struct TextEditorBackend {
 		for (char ch : text)
 			insert(size(), ch);
 	}
+	void recursiveDestruct(Node *toDelete) {
+		if (toDelete) {
+			recursiveDestruct(toDelete->m_leftChild);
+			recursiveDestruct(toDelete->m_rightChild);
+			delete toDelete;
+		}
+	}
+	~TextEditorBackend() {
+		recursiveDestruct(m_root);
+	}
 
 	size_t getSize(Node *n) const {
 		return n ? n->m_size : 0;
