@@ -59,6 +59,35 @@ struct Vertex {
 	}
 };
 
+class Graph {
+private:
+	std::vector<Employee> m_roots;						  // indexes of roots of trees
+	std::vector<Vertex> m_vertices;						  // all vertices and important information for the minimal sum coloring of a tree algorithm
+	std::map<Employee, std::vector<Employee>> m_children; // directed edges to children
+	std::vector<std::pair<Gift, Price>> m_gifts;		  // available gifts/colors
+
+public:
+	Graph(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
+		// Initialize graph
+		for (Employee emp = 0; emp < boss.size(); ++emp) {
+			m_vertices.emplace_back(boss[emp], gift_price.size());
+			if (m_children.find(emp) == m_children.end()) {
+				m_children.insert({emp, {}});
+			}
+			if (boss[emp] == NO_EMPLOYEE) {
+				m_roots.push_back(emp);
+				continue;
+			}
+			m_children[boss[emp]].push_back(emp);
+		}
+		// Initialize gifts
+		for (Gift gift = 0; gift < gift_price.size(); ++gift) {
+			m_gifts.push_back({gift, gift_price[gift]});
+		}
+		std::sort(m_gifts.begin(), m_gifts.end(), [](std::pair<Gift, Price> a, std::pair<Gift, Price> b) { return a.second < b.second; });
+	}
+};
+
 std::pair<Price, std::vector<Gift>> optimize_gifts(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
 }
 
