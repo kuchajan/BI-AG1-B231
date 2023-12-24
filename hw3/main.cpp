@@ -156,6 +156,26 @@ public:
 		}
 		std::sort(m_gifts.begin(), m_gifts.end(), [](std::pair<Gift, Price> a, std::pair<Gift, Price> b) { return a.second < b.second; });
 	}
+
+	void colorGraph() {
+		for (Employee root : m_roots) {
+			colorTree(root);
+		}
+	}
+
+	std::pair<Price, std::vector<Gift>> getResult() const {
+		Price acc = 0;
+		for (Employee emp : m_roots) {
+			acc += m_vertices[emp].minSum;
+		}
+
+		std::vector<Gift> gifts;
+		for (Vertex v : m_vertices) {
+			gifts.push_back(m_gifts[v.currentColor].first);
+		}
+
+		return {acc, gifts};
+	}
 };
 
 std::pair<Price, std::vector<Gift>> optimize_gifts(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
