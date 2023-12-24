@@ -45,17 +45,18 @@ using Gift = size_t;
 
 struct Vertex {
 	Employee parent;
+	Gift totalBestColor;
+
+	Gift firstBestColor;
 	Price minSum;
-	Gift currentColor;
-	Price delta;
-	Gift nextColor;
-	std::vector<size_t> coloradd; // the increase in the total of the chromatic sums TREE[I].MINSUM for all the sons I of a given vertex v when we insist on coloring vertex v with color K.
-	Vertex(const Employee &emp, size_t colorCount) : parent(emp) {
+	Gift secondBestColor;
+	Price minSum2;
+
+	Vertex(const Employee &emp) : parent(emp) {
 		minSum = 0;
-		currentColor = 0;
-		delta = 0;
-		nextColor = 0;
-		coloradd.resize(colorCount);
+		firstBestColor = 0;
+		minSum2 = 0;
+		secondBestColor = 0;
 	}
 };
 
@@ -90,49 +91,57 @@ private:
 		for (size_t i = 0; i < order.size(); ++i) {
 			Employee visiting = order[i];
 			if (m_children[visiting].size() == 0) { // base case
-				m_vertices[visiting].currentColor = 0;
-				m_vertices[visiting].nextColor = 1;
+				m_vertices[visiting].firstBestColor = 0;
+				m_vertices[visiting].secondBestColor = 1;
 				m_vertices[visiting].minSum = m_gifts[0].second;
-				m_vertices[visiting].delta = m_gifts[1].second - m_gifts[0].second;
+				m_vertices[visiting].minSum2 = m_gifts[1].second;
 				continue;
 			}
 
-			for (size_t k = 0; k < m_children[visiting].size() + 2; ++k) {
-				m_vertices[visiting].coloradd[k] = m_gifts[k].second;
+			std::vector<Price> allColoring; // what would the minimal sum be if we insist on coloring this vertex with a color
+			for (size_t k = 0; k < m_gifts.size(); ++k) {
+				Price p = m_gifts[k].second;
+				for (Employee emp : m_children[visiting]) {
+					p += (m_vertices[emp].firstBestColor != k) ? m_vertices[emp].minSum : m_vertices[emp].minSum2;
+				}
+				allColoring.push_back(p);
 			}
 
-			size_t minTotal = 0;
-			for (Employee emp : m_children[visiting]) {
-				minTotal += m_vertices[emp].minSum;
-				m_vertices[visiting].coloradd[m_vertices[emp].currentColor] += m_vertices[emp].delta;
+			size_t pos1 = 0;
+			size_t pos2 = 1;
+			size_t min1 = allColoring[0];
+			size_t min2 = allColoring[1];
+			if (min2 < min1) {
+				std::swap(pos1, pos2);
+				std::swap(min1, min2);
 			}
-			size_t sum1 = 0;
-			size_t sum2 = 0;
-			bool sum1Inf = true;
-			bool sum2Inf = true;
-			size_t color1 = 0;
-			size_t color2 = 0;
-			for (size_t k = 0; k < m_children[visiting].size() + 2; ++k) {
-				size_t value = m_vertices[visiting].coloradd[k];
-				if (sum1Inf || value < sum1) {
-					color2 = color1;
-					sum2 = sum1;
-					if (!sum1Inf) {
-						sum2Inf = false;
-					}
-					color1 = k;
-					sum1 = value;
-					sum1Inf = false;
-				} else if (sum2Inf || value < sum2) {
-					color2 = k;
-					sum2 = value;
-					sum2Inf = false;
+			for (size_t k = 2; k < m_gifts.size(); ++k) {
+				if (allColoring[k] < min1) {
+					min2 = min1;
+					pos2 = pos1;
+					min1 = allColoring[k];
+					pos1 = k;
+					continue;
+				}
+				if (allColoring[k] < min2) {
+					min2 = allColoring[k];
+					pos2 = k;
 				}
 			}
-			m_vertices[visiting].currentColor = color1;
-			m_vertices[visiting].nextColor = color2;
-			m_vertices[visiting].minSum = sum1 + minTotal;
-			m_vertices[visiting].delta = sum2 - sum1;
+			m_vertices[visiting].firstBestColor = pos1;
+			m_vertices[visiting].minSum = min1;
+			m_vertices[visiting].secondBestColor = pos2;
+			m_vertices[visiting].minSum2 = min2;
+		}
+
+		std::reverse(order.begin(), order.end()); // reverse the postorder to get preorder
+		for (size_t i = 0; i < order.size(); ++i) {
+			Employee visiting = order[i];
+			if (m_vertices[visiting].parent == NO_EMPLOYEE) {
+				m_vertices[visiting].totalBestColor = m_vertices[visiting].firstBestColor;
+				continue;
+			}
+			m_vertices[visiting].totalBestColor = (m_vertices[visiting].firstBestColor != m_vertices[m_vertices[visiting].parent].totalBestColor) ? m_vertices[visiting].firstBestColor : m_vertices[visiting].secondBestColor;
 		}
 	}
 
@@ -140,7 +149,7 @@ public:
 	Graph(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
 		// Initialize graph
 		for (Employee emp = 0; emp < boss.size(); ++emp) {
-			m_vertices.emplace_back(boss[emp], gift_price.size());
+			m_vertices.emplace_back(boss[emp]);
 			if (m_children.find(emp) == m_children.end()) {
 				m_children.insert({emp, {}});
 			}
@@ -171,10 +180,10 @@ public:
 
 		std::vector<Gift> gifts;
 		for (Vertex v : m_vertices) {
-			gifts.push_back(m_gifts[v.currentColor].first);
+			gifts.push_back(m_gifts[v.totalBestColor].first);
 		}
-
-		return {acc, gifts};
+		std::pair<Price, std::vector<Gift>> toRet = std::make_pair(acc, gifts);
+		return toRet;
 	}
 };
 
