@@ -38,7 +38,7 @@ using Gift = size_t;
 // However, each connected component is by definition connected, and since the original graph has no cycles, it's connected components also have no cycles
 // So, each connected component is a tree
 // My algorithm will first divide the graph into trees, and then will compute the minimal sum coloring for each tree.
-// The minimal sum coloring for a tree is correct
+// The minimal sum coloring for a tree is correct and heavily inspired from the following source
 // * source: Kubicka, Ewa; Schwenk, Allen J. (1989), "An introduction to chromatic sums", Proceedings of the 17th ACM Computer Science Conference (CSC '89), New York, NY, USA: ACM, pp. 39–45, doi:10.1145/75427.75430, ISBN 978-0-89791-299-0, S2CID 28544302
 // * https://dl.acm.org/doi/10.1145/75427.75430
 // The sum of these minimal sums will be the cheapest way to give presents to the employees.
@@ -47,6 +47,7 @@ struct Vertex {
 	Employee parent;
 	Gift totalBestColor;
 
+	// two colorings, in case it is better for the parent to use this node's first best color
 	Gift firstBestColor;
 	Price minSum;
 	Gift secondBestColor;
@@ -86,11 +87,12 @@ private:
 	}
 
 	void colorTree(Employee root) {
-		std::vector<Employee> order = getPostorder(root);
+		std::vector<Employee> order = getPostorder(root); // linear traversal of entire tree, leaves first, then their parents, etc.
 
 		for (size_t i = 0; i < order.size(); ++i) {
 			Employee visiting = order[i];
 			if (m_children[visiting].size() == 0) { // base case
+				// since the gift array is sorted, the best two colorings must be these
 				m_vertices[visiting].firstBestColor = 0;
 				m_vertices[visiting].secondBestColor = 1;
 				m_vertices[visiting].minSum = m_gifts[0].second;
@@ -98,7 +100,7 @@ private:
 				continue;
 			}
 
-			std::vector<Price> allColoring; // what would the minimal sum be if we insist on coloring this vertex with a color
+			std::vector<Price> allColoring; // what would the minimal sum of sub-tree be if we insist on coloring this vertex with a color
 			for (size_t k = 0; k < m_gifts.size(); ++k) {
 				Price p = m_gifts[k].second;
 				for (Employee emp : m_children[visiting]) {
@@ -107,6 +109,7 @@ private:
 				allColoring.push_back(p);
 			}
 
+			// get the two minimums of this sub-tree
 			size_t pos1 = 0;
 			size_t pos2 = 1;
 			size_t min1 = allColoring[0];
@@ -135,12 +138,15 @@ private:
 		}
 
 		std::reverse(order.begin(), order.end()); // reverse the postorder to get preorder
+		// trace back all results
 		for (size_t i = 0; i < order.size(); ++i) {
 			Employee visiting = order[i];
-			if (m_vertices[visiting].parent == NO_EMPLOYEE) {
+			if (m_vertices[visiting].parent == NO_EMPLOYEE) { // since the supreme boss has no bosses, the first best color must be the total best color
 				m_vertices[visiting].totalBestColor = m_vertices[visiting].firstBestColor;
 				continue;
 			}
+			// this employee has a boss, so if the boss's total best color is the same as the first best color of this employee, the employee must use the second best color
+			// else, the total best color must be the first best color
 			m_vertices[visiting].totalBestColor = (m_vertices[visiting].firstBestColor != m_vertices[m_vertices[visiting].parent].totalBestColor) ? m_vertices[visiting].firstBestColor : m_vertices[visiting].secondBestColor;
 		}
 	}
