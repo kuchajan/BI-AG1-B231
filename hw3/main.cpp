@@ -179,6 +179,9 @@ public:
 };
 
 std::pair<Price, std::vector<Gift>> optimize_gifts(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
+	Graph g(boss, gift_price);
+	g.colorGraph();
+	return g.getResult();
 }
 
 #ifndef __PROGTEST__
