@@ -84,6 +84,58 @@ private:
 		return preorder;
 	}
 
+	void colorTree(Employee root) {
+		std::vector<Employee> order = getPostorder(root);
+
+		for (size_t i = 0; i < order.size(); ++i) {
+			Employee visiting = order[i];
+			if (m_children[visiting].size() == 0) { // base case
+				m_vertices[visiting].currentColor = 0;
+				m_vertices[visiting].nextColor = 1;
+				m_vertices[visiting].minSum = m_gifts[0].second;
+				m_vertices[visiting].delta = m_gifts[1].second - m_gifts[0].second;
+				continue;
+			}
+
+			for (size_t k = 0; k < m_children[visiting].size() + 2; ++k) {
+				m_vertices[visiting].coloradd[k] = m_gifts[k].second;
+			}
+
+			size_t minTotal = 0;
+			for (Employee emp : m_children[visiting]) {
+				minTotal += m_vertices[emp].minSum;
+				m_vertices[visiting].coloradd[m_vertices[emp].currentColor] += m_vertices[emp].delta;
+			}
+			size_t sum1 = 0;
+			size_t sum2 = 0;
+			bool sum1Inf = true;
+			bool sum2Inf = true;
+			size_t color1 = 0;
+			size_t color2 = 0;
+			for (size_t k = 0; k < m_children[visiting].size() + 2; ++k) {
+				size_t value = m_vertices[visiting].coloradd[k];
+				if (sum1Inf || value < sum1) {
+					color2 = color1;
+					sum2 = sum1;
+					if (!sum1Inf) {
+						sum2Inf = false;
+					}
+					color1 = k;
+					sum1 = value;
+					sum1Inf = false;
+				} else if (sum2Inf || value < sum2) {
+					color2 = k;
+					sum2 = value;
+					sum2Inf = false;
+				}
+			}
+			m_vertices[visiting].currentColor = color1;
+			m_vertices[visiting].nextColor = color2;
+			m_vertices[visiting].minSum = sum1 + minTotal;
+			m_vertices[visiting].delta = sum2 - sum1;
+		}
+	}
+
 public:
 	Graph(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
 		// Initialize graph
