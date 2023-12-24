@@ -66,6 +66,24 @@ private:
 	std::map<Employee, std::vector<Employee>> m_children; // directed edges to children
 	std::vector<std::pair<Gift, Price>> m_gifts;		  // available gifts/colors
 
+	std::vector<Employee> getPostorder(Employee root) {
+		std::vector<Employee> preorder;
+		std::stack<Employee> toVisit;
+
+		toVisit.push(root);
+		while (!toVisit.empty()) {
+			Employee visiting = toVisit.top();
+			toVisit.pop();
+			preorder.push_back(visiting);
+			for (Employee child : m_children[visiting]) {
+				toVisit.push(child);
+			}
+		}
+
+		std::reverse(preorder.begin(), preorder.end());
+		return preorder;
+	}
+
 public:
 	Graph(const std::vector<Employee> &boss, const std::vector<Price> &gift_price) {
 		// Initialize graph
